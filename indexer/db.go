@@ -42,7 +42,6 @@ func (indexer *Indexer) DoDBUpdates(wg *sync.WaitGroup, txDataChan chan *DBData,
 
 			if !indexer.DryRun {
 				var err error
-				config.Log.Info(fmt.Sprintf("Indexing %v TXs from block %d", len(data.txDBWrappers), data.block.Height))
 				indexedBlock, indexedDataset, err = dbTypes.IndexNewBlock(indexer.DB, data.block, data.txDBWrappers, *indexer.Config)
 				if err != nil {
 					// Do a single reattempt on failure
@@ -58,8 +57,9 @@ func (indexer *Indexer) DoDBUpdates(wg *sync.WaitGroup, txDataChan chan *DBData,
 				if err != nil {
 					config.Log.Fatal(fmt.Sprintf("Error indexing custom messages for block %d", data.block.Height), err)
 				}
-
-				config.Log.Info(fmt.Sprintf("Finished indexing %v TXs from block %d", len(data.txDBWrappers), data.block.Height))
+				if len(data.txDBWrappers) > 0 {
+					config.Log.Info(fmt.Sprintf("Stored %v txDBWrappers from block %d", len(data.txDBWrappers), data.block.Height))
+				}
 			} else {
 				config.Log.Info(fmt.Sprintf("Processing block %d (dry run, block data will not be stored in DB).", data.block.Height))
 			}
@@ -101,7 +101,6 @@ func (indexer *Indexer) DoDBUpdates(wg *sync.WaitGroup, txDataChan chan *DBData,
 			}
 			dbWrites++
 			numEvents := len(eventData.blockDBWrapper.BeginBlockEvents) + len(eventData.blockDBWrapper.EndBlockEvents)
-			config.Log.Info(fmt.Sprintf("Indexing %v Block Events from block %d", numEvents, eventData.blockDBWrapper.Block.Height))
 			identifierLoggingString := fmt.Sprintf("block %d", eventData.blockDBWrapper.Block.Height)
 
 			indexedDataset, err := dbTypes.IndexBlockEvents(indexer.DB, indexer.DryRun, eventData.blockDBWrapper, identifierLoggingString)
@@ -114,8 +113,9 @@ func (indexer *Indexer) DoDBUpdates(wg *sync.WaitGroup, txDataChan chan *DBData,
 			if err != nil {
 				config.Log.Fatal(fmt.Sprintf("Error indexing custom block events for %s.", identifierLoggingString), err)
 			}
-
-			config.Log.Info(fmt.Sprintf("Finished indexing %v Block Events from block %d", numEvents, eventData.blockDBWrapper.Block.Height))
+			if numEvents > 0 {
+				//config.Log.Info(fmt.Sprintf("Stored %v Block Events from block %d", numEvents, eventData.blockDBWrapper.Block.Height))
+			}
 		}
 	}
 }

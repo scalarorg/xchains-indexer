@@ -27,22 +27,27 @@ func PostgresDbConnect(host string, port string, database string, user string, p
 // MigrateModels runs the gorm automigrations with all the db models. This will migrate as needed and do nothing if nothing has changed.
 func MigrateModels(db *gorm.DB) error {
 	if err := migrateChainModels(db); err != nil {
+		fmt.Println("Error migrating chain models:", err)
 		return err
 	}
 
 	if err := migrateBlockModels(db); err != nil {
+		fmt.Println("Error migrating block models:", err)
 		return err
 	}
 
 	if err := migrateDenomModels(db); err != nil {
+		fmt.Println("Error migrating denom models:", err)
 		return err
 	}
 
 	if err := migrateTXModels(db); err != nil {
+		fmt.Println("Error migrating tx models:", err)
 		return err
 	}
 
 	if err := migrateParserModels(db); err != nil {
+		fmt.Println("Error migrating parser models:", err)
 		return err
 	}
 
@@ -527,7 +532,7 @@ func IndexCustomMessages(conf config.IndexConfig, db *gorm.DB, dryRun bool, bloc
 								attrs := event.Attributes
 								combinedEventsWithAttribues = append(combinedEventsWithAttribues, parsers.MessageEventWithAttributes{Event: event.MessageEvent, Attributes: attrs})
 							}
-							err := (*parsedData.Parser).IndexMessage(parsedData.Data, dbTransaction, message.Message, combinedEventsWithAttribues, conf)
+							err := (*parsedData.Parser).IndexMessage(parsedData.Data, db, message.Message, combinedEventsWithAttribues, conf)
 							if err != nil {
 								config.Log.Error("Error indexing message.", err)
 								return err

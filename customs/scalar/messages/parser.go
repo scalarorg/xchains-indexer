@@ -4,7 +4,7 @@ import (
 	"log"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	common "github.com/scalarorg/xchains-indexer/customs/xchains/common"
+	common "github.com/scalarorg/xchains-indexer/customs/scalar/common"
 	"github.com/scalarorg/xchains-indexer/filter"
 	"github.com/scalarorg/xchains-indexer/indexer"
 	"github.com/scalarorg/xchains-indexer/parsers"

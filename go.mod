@@ -178,6 +178,7 @@ require (
 	github.com/rogpeppe/go-internal v1.11.0 // indirect
 	github.com/rs/cors v1.8.3 // indirect
 	github.com/sasha-s/go-deadlock v0.3.1 // indirect
+	github.com/scalarorg/data-models v0.0.0-20250226163254-fec03fd20520 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/spf13/afero v1.9.5 // indirect
 	github.com/spf13/cast v1.7.0 // indirect
@@ -217,6 +218,8 @@ require (
 // replace github.com/scalarorg/xchains-indexer => ./
 
 // replace github.com/cosmos/cosmos-sdk => ../../../cosmos-sdk
+
+// replace github.com/scalarorg/data-models => ../data-models
 
 replace github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 

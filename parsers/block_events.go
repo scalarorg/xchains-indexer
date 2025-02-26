@@ -9,7 +9,7 @@ import (
 
 type BlockEventParser interface {
 	Identifier() string
-	ParseBlockEvent(abci.Event, config.IndexConfig) (*any, error)
+	ParseBlockEvent(block *models.Block, event abci.Event, attributes []models.BlockEventAttribute, conf config.IndexConfig) (*any, error)
 	IndexBlockEvent(*any, *gorm.DB, models.Block, models.BlockEvent, []models.BlockEventAttribute, config.IndexConfig) error
 }
 

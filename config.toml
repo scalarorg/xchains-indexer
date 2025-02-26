@@ -22,7 +22,7 @@ index-transactions = true #If false, we won't attempt to index the chain
 exit-when-caught-up = true #mainly used for Osmosis rewards indexing
 index-block-events = true #index block events for the particular chain
 dry = false # if true, indexing will occur but data will not be written to the database.
-rpc-workers = 1
+rpc-workers = 2
 reindex = true
 reattempt-failed-blocks = false
 
@@ -34,10 +34,11 @@ reattempt-failed-blocks = false
 # rpc = "https://axelar-rpc.polkachu.com:443/"
 # rpc = "https://axelar-testnet-rpc.qubelabs.io:443/"
 # rpc = "https://axelar.drpc.org" # This is the official axelar chain, but it is not free
-# rpc = "http://localhost:26657" # This is the local core
-rpc = "http://node.testnet.scalar.org" # This is the testnet core node
-account-prefix = "cosmos"
-chain-id = "scalar-testnet-4"
+rpc = "http://127.0.0.1:26657" # This is the local core
+# rpc = "http://13.213.29.224:26657" # This is the testnet scalarnode1
+# rpc = "http://node.testnet.scalar.org" # This is the testnet core node
+account-prefix = "scalar"
+chain-id = "cosmos|73475"
 chain-name = "ScalarXchains"
 
 # Flags for extending or modifying the indexed dataset
@@ -48,7 +49,7 @@ block-events-base64-encoded=true
 [database]
 host = "localhost"
 port = "5452"
-database = "xchains_indexer"
+database = "indexer"
 user = "postgres"
 password = "postgres"
 log-level = ""

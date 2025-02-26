@@ -7,11 +7,9 @@ import (
 )
 
 func ParseAttributeValue(value string) any {
-	if strings.HasPrefix(value, "\"") && strings.HasSuffix(value, "\"") {
-		return value[1 : len(value)-1]
-	}
-	if strings.HasPrefix(value, "[") && strings.HasSuffix(value, "]") {
-		items := strings.Split(value[1:len(value)-1], ",")
+	result := strings.Trim(value, "\"")
+	if strings.HasPrefix(result, "[") && strings.HasSuffix(result, "]") {
+		items := strings.Split(result[1:len(result)-1], ",")
 		hexValue := "0x"
 		for _, item := range items {
 			v, e := strconv.Atoi(item)
@@ -21,5 +19,5 @@ func ParseAttributeValue(value string) any {
 		}
 		return hexValue
 	}
-	return value
+	return result
 }

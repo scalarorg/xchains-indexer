@@ -1,4 +1,4 @@
-package messages
+package voterequest
 
 import (
 	"errors"
@@ -10,7 +10,7 @@ import (
 	stdTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/scalarorg/xchains-indexer/config"
 	txTypes "github.com/scalarorg/xchains-indexer/cosmos/modules/tx"
-	"github.com/scalarorg/xchains-indexer/customs/xchains/common"
+	"github.com/scalarorg/xchains-indexer/customs/scalar/common"
 	"github.com/scalarorg/xchains-indexer/db/models"
 	"github.com/scalarorg/xchains-indexer/filter"
 	"github.com/scalarorg/xchains-indexer/indexer"
