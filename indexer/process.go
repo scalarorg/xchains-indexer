@@ -17,8 +17,6 @@ func (indexer *Indexer) ProcessBlocks(wg *sync.WaitGroup, failedBlockHandler cor
 
 	for blockData := range blockRPCWorkerChan {
 		currentHeight := blockData.BlockData.Block.Height
-		config.Log.Infof("Parsing data for block %d", currentHeight)
-
 		block, err := core.ProcessBlock(blockData.BlockData, blockData.BlockResultsData, chainID)
 		if err != nil {
 			config.Log.Error("ProcessBlock: unhandled error", err)
@@ -31,7 +29,6 @@ func (indexer *Indexer) ProcessBlocks(wg *sync.WaitGroup, failedBlockHandler cor
 		}
 
 		if blockData.IndexBlockEvents && !blockData.BlockEventRequestsFailed {
-			config.Log.Info("Parsing block events")
 			blockDBWrapper, err := core.ProcessRPCBlockResults(*indexer.Config, block, blockData.BlockResultsData, indexer.CustomBeginBlockEventParserRegistry, indexer.CustomEndBlockEventParserRegistry)
 			if err != nil {
 				config.Log.Errorf("Failed to process block events during block %d event processing, adding to failed block events table", currentHeight)
@@ -41,8 +38,7 @@ func (indexer *Indexer) ProcessBlocks(wg *sync.WaitGroup, failedBlockHandler cor
 					config.Log.Fatal("Failed to insert failed block event", err)
 				}
 			} else {
-				config.Log.Infof("Finished parsing block event data for block %d", currentHeight)
-
+				// config.Log.Infof("Finished parsing block event data for block %d", currentHeight)
 				var beginBlockFilterError error
 				var endBlockFilterError error
 				if blockEventFilterRegistry.BeginBlockEventFilterRegistry != nil && blockEventFilterRegistry.BeginBlockEventFilterRegistry.NumFilters() > 0 {
@@ -69,15 +65,12 @@ func (indexer *Indexer) ProcessBlocks(wg *sync.WaitGroup, failedBlockHandler cor
 		}
 
 		if blockData.IndexTransactions && !blockData.TxRequestsFailed {
-			config.Log.Info("Parsing transactions")
 			var txDBWrappers []dbTypes.TxDBWrapper
 			var err error
 
 			if blockData.GetTxsResponse != nil {
-				config.Log.Debug("Processing TXs from RPC TX Search response")
 				txDBWrappers, _, err = core.ProcessRPCTXs(indexer.Config, indexer.DB, indexer.ChainClient, indexer.MessageTypeFilters, blockData.GetTxsResponse, indexer.CustomMessageParserRegistry)
 			} else if blockData.BlockResultsData != nil {
-				config.Log.Debug("Processing TXs from BlockResults search response")
 				txDBWrappers, _, err = core.ProcessRPCBlockByHeightTXs(indexer.Config, indexer.DB, indexer.ChainClient, indexer.MessageTypeFilters, blockData.BlockData, blockData.BlockResultsData, indexer.CustomMessageParserRegistry)
 			}
 

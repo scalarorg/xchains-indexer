@@ -21,16 +21,22 @@ ifndef $(PACKAGES)
 	PACKAGES := ./main.go
 endif
 # default value, overide with: make -e FQCN="foo"
-# FQCN = ghcr.io/scalarorg/xchains-indexer
-FQCN = scalarorg/xchains-indexer
+# FQCN = ghcr.io/scalarorg/indexer
+FQCN = scalarorg/indexer
 all: install
 
 install: go.sum
 	go install .
 
 build:
-	go build -o bin/xchains-indexer .
+	go build -o bin/indexer .
 
+run:
+	go run .
+
+scalar-indexer:
+	go run ./customs/scalar index
+	
 clean:
 	rm -rf build
 
@@ -65,11 +71,11 @@ proto-all: proto-update-deps proto-format proto-lint proto-gen
 
 proto-gen:
 	@echo "Create docker image for Protobuf files"
-	@DOCKER_BUILDKIT=1 docker build -t scalarorg/xchains-indexer-proto-gen -f ./Dockerfile.protocgen .
+	@DOCKER_BUILDKIT=1 docker build -t scalarorg/indexer-proto-gen -f ./Dockerfile.protocgen .
 	@echo "Generate Protobuf files"
-	@$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace scalarorg/xchains-indexer-proto-gen sh ./scripts/protocgen.sh
+	@$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace scalarorg/indexer-proto-gen sh ./scripts/protocgen.sh
 	@echo "Generating Protobuf Swagger endpoint"
-	@$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace scalarorg/xchains-indexer-proto-gen sh ./scripts/protoc-swagger-gen.sh
+	@$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace scalarorg/indexer-proto-gen sh ./scripts/protoc-swagger-gen.sh
 	@statik -src=./client/docs/static -dest=./client/docs -f -m
 
 proto-format:
