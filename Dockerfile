@@ -1,27 +1,45 @@
-FROM golang:1.19-alpine3.16 AS build-env
+FROM golang:1.23.3-alpine3.20 AS base
 
-# Customize to your build env
-ARG PACKAGES="./main.go"
 # TARGETPLATFORM should be one of linux/amd64 or linux/arm64
 ARG TARGETPLATFORM
-
-# Use muslc for static libs
-ARG BUILD_TAGS=muslc
-ARG LD_FLAGS=-linkmode=external -extldflags '-Wl,-z,muldefs -static'
-
+ARG WASMVM_VERSION=v2.1.3
 # Install cli tools for building and final image
-RUN apk add --update --no-cache curl make git libc-dev bash gcc linux-headers eudev-dev ncurses-dev libc6-compat jq htop atop iotop
+RUN apk add --update --no-cache \
+  atop \
+  bash \
+  curl \
+  eudev-dev \
+  gcc \
+  git \
+  htop \
+  iotop \
+  jq \
+  libc-dev \
+  libc6-compat \
+  linux-headers \
+  make \
+  ncurses-dev
 
 # Install build dependencies.
 RUN if [ "${TARGETPLATFORM}" = "linux/amd64" ] ; then \
-  wget -P /lib https://github.com/CosmWasm/wasmvm/releases/download/v1.2.3/libwasmvm_muslc.x86_64.a ; \
+  wget -P /lib https://github.com/CosmWasm/wasmvm/releases/download/${WASMVM_VERSION}/libwasmvm_muslc.x86_64.a ; \
   cp /lib/libwasmvm_muslc.x86_64.a /lib/libwasmvm_muslc.a ; \
   fi
 
 RUN if  [ "${TARGETPLATFORM}" = "linux/arm64" ] ; then \
-  wget -P /lib https://github.com/CosmWasm/wasmvm/releases/download/v1.2.3/libwasmvm_muslc.aarch64.a ; \
+  wget -P /lib https://github.com/CosmWasm/wasmvm/releases/download/${WASMVM_VERSION}/libwasmvm_muslc.aarch64.a ; \
   cp /lib/libwasmvm_muslc.aarch64.a /lib/libwasmvm_muslc.a ; \
   fi
+
+FROM base AS build-env
+
+# Customize to your build env
+ARG PACKAGES
+# TARGETPLATFORM should be one of linux/amd64 or linux/arm64
+ARG TARGETPLATFORM
+# Use muslc for static libs
+ARG BUILD_TAGS=muslc
+ARG LD_FLAGS=-linkmode=external -extldflags '-Wl,-z,muldefs -static'
 
 # Build main app.
 WORKDIR /go/src/app
@@ -67,8 +85,8 @@ COPY --from=build-env /usr/lib/libonig.so.5 /lib
 COPY --from=build-env /usr/lib/libcurl.so.4 /lib
 COPY --from=build-env /lib/libz.so.1 /lib
 COPY --from=build-env /usr/lib/libnghttp2.so.14 /lib
-COPY --from=build-env /lib/libssl.so.1.1 /lib
-COPY --from=build-env /lib/libcrypto.so.1.1 /lib
+COPY --from=build-env /lib/libssl.so.3 /lib
+COPY --from=build-env /lib/libcrypto.so.3 /lib
 COPY --from=build-env /usr/lib/libbrotlidec.so.1 /lib
 COPY --from=build-env /usr/lib/libbrotlicommon.so.1 /lib
 
