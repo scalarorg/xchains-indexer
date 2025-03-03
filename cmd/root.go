@@ -18,9 +18,9 @@ import (
 var (
 	cfgFile string // config file location to load
 	rootCmd = &cobra.Command{
-		Use:   "cosmos-indexer",
+		Use:   "indexer",
 		Short: "A CLI tool for indexing and querying on-chain data",
-		Long: `Cosmos Tax CLI is a CLI tool for indexing and querying Cosmos-based blockchains,
+		Long: `Scalar Indexer is a CLI tool for indexing and querying Cosmos-based blockchains,
 		with a heavy focus on taxable events.`,
 	}
 	viperConf = viper.New()

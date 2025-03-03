@@ -1,4 +1,4 @@
-package messages
+package reward
 
 import (
 	"encoding/json"
@@ -8,11 +8,8 @@ import (
 	"github.com/scalarorg/xchains-indexer/config"
 	indexerTxTypes "github.com/scalarorg/xchains-indexer/cosmos/modules/tx"
 	common "github.com/scalarorg/xchains-indexer/customs/scalar/common"
-	voterequest "github.com/scalarorg/xchains-indexer/customs/scalar/vote_request"
 	"github.com/scalarorg/xchains-indexer/db/models"
-	"github.com/scalarorg/xchains-indexer/indexer"
 	"github.com/scalarorg/xchains-indexer/parsers"
-	rewardTypes "github.com/scalarorg/xchains-indexer/x/reward/types"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -20,49 +17,45 @@ import (
 // This defines the custom message parser for the call contract approve message type
 // It implements the MessageParser interface
 type RefundMsgRequestParser struct {
-	Id      string
-	Indexer *indexer.Indexer
+	common.BaseMessageParser
 }
 
-func (p *RefundMsgRequestParser) Identifier() string {
-	return p.Id
-}
+func (p *RefundMsgRequestParser) ParseMessage(sdkMsg stdTypes.Msg, messageLog *indexerTxTypes.LogMessage, cfg config.IndexConfig) (*any, error) {
+	config.Log.Debugf("[RefundMsgRequestParser] ParseMessage# msg: %++v", sdkMsg)
+	// parsedMsg, ok := sdkMsg.(*rewardTypes.RefundMsgRequest)
+	// if !ok {
+	// 	return nil, errors.New("not a refund message request")
+	// }
+	// parsedMessageValue := RefundMsgRequestValue{
+	// 	Type:   MSG_SCALAR_REWARD_REFUND_MSG_REQUEST,
+	// 	Sender: parsedMsg.Sender,
+	// }
+	// innerMsg := parsedMsg.InnerMessage.GetCachedValue()
+	// if innerMsg != nil {
+	// 	voteRequest, ok := (innerMsg).(voterequest.VoteRequestValue)
+	// 	if ok {
+	// 		parsedMessageValue.InnerMessage = &voteRequest
+	// 		storageVal := any(parsedMessageValue)
+	// 		return &storageVal, nil
+	// 	} else {
+	// 		config.Log.Debug("RefundMsgRequestParser# Failed to cast inner message to VoteRequestValue")
+	// 	}
+	// } else {
+	// 	msg, err := common.ParseInnerMessage(p.Indexer.ChainClient.Codec, parsedMsg.InnerMessage, p.Indexer.CustomMessageParserRegistry, messageLog, cfg)
+	// 	if msg != nil && err == nil {
+	// 		voteRequest, ok := (*msg).(voterequest.VoteRequestValue)
+	// 		if ok {
+	// 			parsedMessageValue.InnerMessage = &voteRequest
+	// 			storageVal := any(parsedMessageValue)
+	// 			return &storageVal, nil
+	// 		} else {
+	// 			config.Log.Debug("RefundMsgRequestParser# Failed to cast inner message to VoteRequestValue")
+	// 		}
 
-func (p *RefundMsgRequestParser) ParseMessage(cosmosMsg stdTypes.Msg, messageLog *indexerTxTypes.LogMessage, cfg config.IndexConfig) (*any, error) {
-	parsedMsg, ok := cosmosMsg.(*rewardTypes.RefundMsgRequest)
-	if !ok {
-		return nil, errors.New("not a refund message request")
-	}
-	parsedMessageValue := RefundMsgRequestValue{
-		Type:   "/" + rewardTypes.MSG_REWARD_REFUND_MSG_REQUEST,
-		Sender: parsedMsg.Sender,
-	}
-	innerMsg := parsedMsg.InnerMessage.GetCachedValue()
-	if innerMsg != nil {
-		voteRequest, ok := (innerMsg).(voterequest.VoteRequestValue)
-		if ok {
-			parsedMessageValue.InnerMessage = &voteRequest
-			storageVal := any(parsedMessageValue)
-			return &storageVal, nil
-		} else {
-			config.Log.Debug("RefundMsgRequestParser# Failed to cast inner message to VoteRequestValue")
-		}
-	} else {
-		msg, err := common.ParseInnerMessage(p.Indexer.ChainClient.Codec, parsedMsg.InnerMessage, p.Indexer.CustomMessageParserRegistry, messageLog, cfg)
-		if msg != nil && err == nil {
-			voteRequest, ok := (*msg).(voterequest.VoteRequestValue)
-			if ok {
-				parsedMessageValue.InnerMessage = &voteRequest
-				storageVal := any(parsedMessageValue)
-				return &storageVal, nil
-			} else {
-				config.Log.Debug("RefundMsgRequestParser# Failed to cast inner message to VoteRequestValue")
-			}
-
-		} else {
-			config.Log.Debug("RefundMsgRequestParser# Failed to parse inner message")
-		}
-	}
+	// 	} else {
+	// 		config.Log.Debug("RefundMsgRequestParser# Failed to parse inner message")
+	// 	}
+	// }
 
 	return nil, nil
 }

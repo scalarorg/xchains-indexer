@@ -375,6 +375,7 @@ func ProcessTx(cfg *config.IndexConfig, db *gorm.DB, tx txtypes.MergedTx, messag
 	// non-zero code means the Tx was unsuccessful. We will still need to account for fees in both cases though.
 	if code == 0 {
 		for messageIndex, message := range tx.Tx.Body.Messages {
+			config.Log.Debugf("Processing message: %++v", message)
 			if message != nil {
 				messageLog := txtypes.GetMessageLogForIndex(tx.TxResponse.Log, messageIndex)
 				messageType, currMessageDBWrapper := ProcessMessage(messageIndex, message, messageLog, uniqueEventTypes, uniqueEventAttributeKeys)

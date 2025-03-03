@@ -8,8 +8,28 @@ import (
 	stdTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/scalarorg/xchains-indexer/config"
 	txTypes "github.com/scalarorg/xchains-indexer/cosmos/modules/tx"
+	"github.com/scalarorg/xchains-indexer/db/models"
+	"github.com/scalarorg/xchains-indexer/indexer"
 	"github.com/scalarorg/xchains-indexer/parsers"
+	"gorm.io/gorm"
 )
+
+type BaseMessageParser struct {
+	Id      string
+	Indexer *indexer.Indexer
+}
+
+func (p *BaseMessageParser) Identifier() string {
+	return p.Id
+}
+
+func (p *BaseMessageParser) ParseMessage(cosmosMsg stdTypes.Msg, messageLog *txTypes.LogMessage, cfg config.IndexConfig) (*any, error) {
+	return nil, nil
+}
+
+func (p *BaseMessageParser) IndexMessage(dataset *any, db *gorm.DB, message models.Message, messageEvents []parsers.MessageEventWithAttributes, cfg config.IndexConfig) error {
+	return nil
+}
 
 type IAnyMessageParser interface {
 	ParseAnyMessage(types.Any, *txTypes.LogMessage, config.IndexConfig) (*any, error)
