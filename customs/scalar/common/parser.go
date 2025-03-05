@@ -3,7 +3,6 @@ package common
 import (
 	"fmt"
 
-	"github.com/DefiantLabs/probe/client"
 	types "github.com/cosmos/cosmos-sdk/codec/types"
 	stdTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/scalarorg/xchains-indexer/config"
@@ -11,6 +10,7 @@ import (
 	"github.com/scalarorg/xchains-indexer/db/models"
 	"github.com/scalarorg/xchains-indexer/indexer"
 	"github.com/scalarorg/xchains-indexer/parsers"
+	"github.com/scalarorg/xchains-indexer/probe/client"
 	"gorm.io/gorm"
 )
 

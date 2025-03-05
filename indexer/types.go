@@ -1,7 +1,6 @@
 package indexer
 
 import (
-	"github.com/DefiantLabs/probe/client"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/scalarorg/xchains-indexer/config"
 	"github.com/scalarorg/xchains-indexer/core"
@@ -9,6 +8,7 @@ import (
 	"github.com/scalarorg/xchains-indexer/db/models"
 	"github.com/scalarorg/xchains-indexer/filter"
 	"github.com/scalarorg/xchains-indexer/parsers"
+	"github.com/scalarorg/xchains-indexer/probe/client"
 	"gorm.io/gorm"
 )
 
@@ -41,30 +41,27 @@ type PreExitCustomDataset struct {
 }
 
 type Indexer struct {
-	Config                              *config.IndexConfig
-	DryRun                              bool
-	DB                                  *gorm.DB
-	ChainClient                         *client.ChainClient
-	BlockEnqueueFunction                func(chan *core.EnqueueData) error
-	CustomModuleBasics                  []module.AppModuleBasic // Used for extending the AppModuleBasics registered in the probe ChainClientient
-	BlockEventFilterRegistries          BlockEventFilterRegistries
-	MessageTypeFilters                  []filter.MessageTypeFilter
-	CustomBeginBlockEventParserRegistry map[string][]parsers.BlockEventParser // Used for associating parsers to block event types in BeginBlock events
-	CustomEndBlockEventParserRegistry   map[string][]parsers.BlockEventParser // Used for associating parsers to block event types in EndBlock events
-	CustomBeginBlockParserTrackers      map[string]models.BlockEventParser    // Used for tracking block event parsers in the database
-	CustomEndBlockParserTrackers        map[string]models.BlockEventParser    // Used for tracking block event parsers in the database
-	CustomMessageParserRegistry         map[string][]parsers.MessageParser    // Used for associating parsers to message types
-	CustomMessageParserTrackers         map[string]models.MessageParser       // Used for tracking message parsers in the database
-	CustomModels                        []any
-	PostIndexCustomMessageFunction      func(*PostIndexCustomMessageDataset) error // Called post indexing of the custom messages with the indexed dataset, useful for custom indexing on the whole dataset or for additional processing
-	PostSetupCustomFunction             func(PostSetupCustomDataset) error         // Called post setup of the indexer, useful for custom indexing on the whole dataset or for additional processing
-	PostSetupDatasetChannel             chan *PostSetupDataset                     // passes configured indexer data to any reader
-	PreExitCustomFunction               func(*PreExitCustomDataset) error          // Called post indexing of the custom messages with the indexed dataset, useful for custom indexing on the whole dataset or for additional processing
+	Config                         *config.IndexConfig
+	DryRun                         bool
+	DB                             *gorm.DB
+	ChainClient                    *client.ChainClient
+	BlockEnqueueFunction           func(chan *core.EnqueueData) error
+	CustomModuleBasics             []module.AppModuleBasic // Used for extending the AppModuleBasics registered in the probe ChainClientient
+	BlockEventFilterRegistries     BlockEventFilterRegistries
+	MessageTypeFilters             []filter.MessageTypeFilter
+	CustomBlockEventParserRegistry map[string][]parsers.BlockEventParser // Used for associating parsers to block event types in Block events
+	CustomBlockParserTrackers      map[string]models.BlockEventParser    // Used for tracking block event parsers in the database
+	CustomMessageParserRegistry    map[string][]parsers.MessageParser    // Used for associating parsers to message types
+	CustomMessageParserTrackers    map[string]models.MessageParser       // Used for tracking message parsers in the database
+	CustomModels                   []any
+	PostIndexCustomMessageFunction func(*PostIndexCustomMessageDataset) error // Called post indexing of the custom messages with the indexed dataset, useful for custom indexing on the whole dataset or for additional processing
+	PostSetupCustomFunction        func(PostSetupCustomDataset) error         // Called post setup of the indexer, useful for custom indexing on the whole dataset or for additional processing
+	PostSetupDatasetChannel        chan *PostSetupDataset                     // passes configured indexer data to any reader
+	PreExitCustomFunction          func(*PreExitCustomDataset) error          // Called post indexing of the custom messages with the indexed dataset, useful for custom indexing on the whole dataset or for additional processing
 }
 
 type BlockEventFilterRegistries struct {
-	BeginBlockEventFilterRegistry *filter.StaticBlockEventFilterRegistry
-	EndBlockEventFilterRegistry   *filter.StaticBlockEventFilterRegistry
+	BlockEventFilterRegistry *filter.StaticBlockEventFilterRegistry
 }
 
 type DBData struct {

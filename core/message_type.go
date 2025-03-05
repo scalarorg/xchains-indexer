@@ -1,7 +1,7 @@
 package core
 
 import (
-	nexusTypes "github.com/scalarorg/xchains-indexer/x/nexus/types"
+	nexusTypes "github.com/scalarorg/scalar-core/x/nexus/types"
 )
 
 const (

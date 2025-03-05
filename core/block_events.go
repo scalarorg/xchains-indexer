@@ -13,7 +13,7 @@ import (
 	"github.com/scalarorg/xchains-indexer/parsers"
 )
 
-func ProcessRPCBlockResults(conf config.IndexConfig, block models.Block, blockResults *ctypes.ResultBlockResults, customBeginBlockParsers map[string][]parsers.BlockEventParser, customEndBlockParsers map[string][]parsers.BlockEventParser) (*db.BlockDBWrapper, error) {
+func ProcessRPCBlockResults(conf config.IndexConfig, block models.Block, blockResults *ctypes.ResultBlockResults, customBlockParsers map[string][]parsers.BlockEventParser) (*db.BlockDBWrapper, error) {
 	var blockDBWrapper db.BlockDBWrapper
 
 	blockDBWrapper.Block = &block
@@ -22,13 +22,7 @@ func ProcessRPCBlockResults(conf config.IndexConfig, block models.Block, blockRe
 	blockDBWrapper.UniqueBlockEventTypes = make(map[string]models.BlockEventType)
 
 	var err error
-	blockDBWrapper.BeginBlockEvents, err = ProcessRPCBlockEvents(blockDBWrapper.Block, blockResults.BeginBlockEvents, models.BeginBlockEvent, blockDBWrapper.UniqueBlockEventTypes, blockDBWrapper.UniqueBlockEventAttributeKeys, customBeginBlockParsers, conf)
-
-	if err != nil {
-		return nil, err
-	}
-
-	blockDBWrapper.EndBlockEvents, err = ProcessRPCBlockEvents(blockDBWrapper.Block, blockResults.EndBlockEvents, models.EndBlockEvent, blockDBWrapper.UniqueBlockEventTypes, blockDBWrapper.UniqueBlockEventAttributeKeys, customEndBlockParsers, conf)
+	blockDBWrapper.BlockEvents, err = ProcessRPCBlockEvents(blockDBWrapper.Block, blockResults.FinalizeBlockEvents, blockDBWrapper.UniqueBlockEventTypes, blockDBWrapper.UniqueBlockEventAttributeKeys, customBlockParsers, conf)
 
 	if err != nil {
 		return nil, err
@@ -37,17 +31,16 @@ func ProcessRPCBlockResults(conf config.IndexConfig, block models.Block, blockRe
 	return &blockDBWrapper, nil
 }
 
-func ProcessRPCBlockEvents(block *models.Block, blockEvents []abci.Event, blockLifecyclePosition models.BlockLifecyclePosition, uniqueEventTypes map[string]models.BlockEventType, uniqueAttributeKeys map[string]models.BlockEventAttributeKey, customParsers map[string][]parsers.BlockEventParser, conf config.IndexConfig) ([]db.BlockEventDBWrapper, error) {
+func ProcessRPCBlockEvents(block *models.Block, blockEvents []abci.Event, uniqueEventTypes map[string]models.BlockEventType, uniqueAttributeKeys map[string]models.BlockEventAttributeKey, customParsers map[string][]parsers.BlockEventParser, conf config.IndexConfig) ([]db.BlockEventDBWrapper, error) {
 	beginBlockEvents := make([]db.BlockEventDBWrapper, len(blockEvents))
 	for index, event := range blockEvents {
 		eventType := models.BlockEventType{
 			Type: event.Type,
 		}
 		beginBlockEvents[index].BlockEvent = models.BlockEvent{
-			Index:             uint64(index),
-			LifecyclePosition: blockLifecyclePosition,
-			Block:             *block,
-			BlockEventType:    eventType,
+			Index:          uint64(index),
+			Block:          *block,
+			BlockEventType: eventType,
 		}
 
 		uniqueEventTypes[event.Type] = eventType

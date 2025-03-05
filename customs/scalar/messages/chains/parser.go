@@ -2,9 +2,9 @@ package chains
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	chainsTypes "github.com/scalarorg/scalar-core/x/chains/types"
 	"github.com/scalarorg/xchains-indexer/indexer"
 	"github.com/scalarorg/xchains-indexer/parsers"
-	chainsTypes "github.com/scalarorg/xchains-indexer/x/chains/types"
 )
 
 const (

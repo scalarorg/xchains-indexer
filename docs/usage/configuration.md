@@ -205,7 +205,7 @@ Extended flags that modify how the indexer handles parsed datasets.
 
 ### Probe Configuration
 
-These flags modify the behavior of the usage of the [probe](https://github.com/DefiantLabs/probe) package, which is the main way the application uses to get data from the RPC server.
+These flags modify the behavior of the usage of the [probe](https://github.com/xchains-indexer/probe) package, which is the main way the application uses to get data from the RPC server.
 
 - **Node RPC Endpoint**
 

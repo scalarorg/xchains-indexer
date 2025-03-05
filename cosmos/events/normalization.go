@@ -8,6 +8,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types"
 	"github.com/scalarorg/xchains-indexer/config"
 	txtypes "github.com/scalarorg/xchains-indexer/cosmos/modules/tx"
+	tdmAbciTypes "github.com/tendermint/tendermint/abci/types"
 )
 
 func NormalizedAttributesToAttributes(attrs []txtypes.Attribute) []types.Attribute {
@@ -40,6 +41,18 @@ func EventAttributesToNormalizedAttributes(attrs []cometAbciTypes.EventAttribute
 	return list
 }
 
+func TdmEventAttributesToNormalizedAttributes(attrs []tdmAbciTypes.EventAttribute) []txtypes.Attribute {
+	list := []txtypes.Attribute{}
+	for _, attr := range attrs {
+		lma := txtypes.Attribute{Key: string(attr.Key), Value: string(attr.Value)}
+		fmt.Println("attr", attr)
+		fmt.Println("lma", lma)
+		list = append(list, lma)
+	}
+
+	return list
+}
+
 func StringEventstoNormalizedEvents(msgEvents types.StringEvents) (list []txtypes.LogMessageEvent) {
 	for _, evt := range msgEvents {
 		lme := txtypes.LogMessageEvent{Type: evt.Type, Attributes: AttributesToNormalizedAttributes(evt.Attributes)}
@@ -56,6 +69,41 @@ func toNormalizedEvents(msgEvents []cometAbciTypes.Event) (list []txtypes.LogMes
 	}
 
 	return list
+}
+
+func ParseTdmTxEventsToMessageIndexEvents(numMessages int, events []tdmAbciTypes.Event) (types.ABCIMessageLogs, error) {
+	parsedLogs := make(types.ABCIMessageLogs, numMessages)
+	for index := range parsedLogs {
+		parsedLogs[index] = types.ABCIMessageLog{
+			MsgIndex: uint32(index),
+		}
+	}
+
+	// TODO: Fix this to be more efficient, no need to translate multiple times to hack this together
+	logMessageEvents := []txtypes.LogMessageEvent{}
+	for _, evt := range events {
+		lme := txtypes.LogMessageEvent{Type: evt.Type, Attributes: TdmEventAttributesToNormalizedAttributes(evt.Attributes)}
+		logMessageEvents = append(logMessageEvents, lme)
+	}
+
+	for _, event := range logMessageEvents {
+		loopEvent := event
+		val, err := txtypes.GetValueForAttribute("msg_index", &loopEvent)
+
+		if err == nil && val != "" {
+			msgIndex, err := strconv.Atoi(val)
+			if err != nil {
+				config.Log.Error(fmt.Sprintf("Error parsing msg_index from event: %v", err))
+				return nil, err
+			}
+
+			if msgIndex >= 0 && msgIndex < len(parsedLogs) {
+				parsedLogs[msgIndex].Events = append(parsedLogs[msgIndex].Events, types.StringEvent{Type: event.Type, Attributes: NormalizedAttributesToAttributes(event.Attributes)})
+			}
+		}
+	}
+
+	return parsedLogs, nil
 }
 
 func ParseTxEventsToMessageIndexEvents(numMessages int, events []cometAbciTypes.Event) (types.ABCIMessageLogs, error) {

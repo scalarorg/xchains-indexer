@@ -9,7 +9,6 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/DefiantLabs/probe/client"
 	coretypes "github.com/cometbft/cometbft/rpc/core/types"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/multisig"
 	cryptoTypes "github.com/cosmos/cosmos-sdk/crypto/types"
@@ -21,6 +20,7 @@ import (
 	"github.com/scalarorg/xchains-indexer/db/models"
 	"github.com/scalarorg/xchains-indexer/filter"
 	"github.com/scalarorg/xchains-indexer/parsers"
+	"github.com/scalarorg/xchains-indexer/probe/client"
 	"github.com/scalarorg/xchains-indexer/utils"
 	"gorm.io/gorm"
 
@@ -208,7 +208,7 @@ func ProcessRPCTXs(cfg *config.IndexConfig, db *gorm.DB, cl *client.ChainClient,
 
 		if len(currTxResp.Logs) == 0 && len(currTxResp.Events) != 0 {
 			// We have a version of Cosmos SDK that removed the Logs field from the TxResponse, we need to parse the events into message index logs
-			parsedLogs, err := indexerEvents.ParseTxEventsToMessageIndexEvents(len(currTx.Body.Messages), currTxResp.Events)
+			parsedLogs, err := indexerEvents.ParseTdmTxEventsToMessageIndexEvents(len(currTx.Body.Messages), currTxResp.Events)
 			if err != nil {
 				config.Log.Errorf("Error parsing events to message index events to normalize: %v", err)
 				return nil, blockTime, err

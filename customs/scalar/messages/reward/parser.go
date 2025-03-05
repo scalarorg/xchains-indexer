@@ -2,10 +2,10 @@ package reward
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	rewardTypes "github.com/scalarorg/scalar-core/x/reward/types"
 	common "github.com/scalarorg/xchains-indexer/customs/scalar/common"
 	"github.com/scalarorg/xchains-indexer/indexer"
 	"github.com/scalarorg/xchains-indexer/parsers"
-	rewardTypes "github.com/scalarorg/xchains-indexer/x/reward/types"
 )
 
 const (

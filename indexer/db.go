@@ -100,7 +100,7 @@ func (indexer *Indexer) DoDBUpdates(wg *sync.WaitGroup, txDataChan chan *DBData,
 				continue
 			}
 			dbWrites++
-			numEvents := len(eventData.blockDBWrapper.BeginBlockEvents) + len(eventData.blockDBWrapper.EndBlockEvents)
+			numEvents := len(eventData.blockDBWrapper.BlockEvents)
 			identifierLoggingString := fmt.Sprintf("block %d", eventData.blockDBWrapper.Block.Height)
 
 			indexedDataset, err := dbTypes.IndexBlockEvents(indexer.DB, indexer.DryRun, eventData.blockDBWrapper, identifierLoggingString)
@@ -108,7 +108,7 @@ func (indexer *Indexer) DoDBUpdates(wg *sync.WaitGroup, txDataChan chan *DBData,
 				config.Log.Fatal(fmt.Sprintf("Error indexing block events for %s.", identifierLoggingString), err)
 			}
 
-			err = dbTypes.IndexCustomBlockEvents(*indexer.Config, indexer.DB, indexer.DryRun, indexedDataset, identifierLoggingString, indexer.CustomBeginBlockParserTrackers, indexer.CustomEndBlockParserTrackers)
+			err = dbTypes.IndexCustomBlockEvents(*indexer.Config, indexer.DB, indexer.DryRun, indexedDataset, identifierLoggingString, indexer.CustomBlockParserTrackers)
 
 			if err != nil {
 				config.Log.Fatal(fmt.Sprintf("Error indexing custom block events for %s.", identifierLoggingString), err)

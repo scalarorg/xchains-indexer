@@ -17,35 +17,35 @@ type FilterConfigTestSuite struct {
 func (suite *FilterConfigTestSuite) TestParseJSONFilterConfig() {
 	conf := blockFilterConfigs{}
 
-	beginFilterEventTypeInvalid, err := getMockEventTypeBytes(true)
+	filterEventTypeInvalid, err := getMockEventTypeBytes(true)
 
 	suite.Require().NoError(err)
 
-	conf.BeginBlockFilters = []json.RawMessage{beginFilterEventTypeInvalid}
+	conf.BlockFilters = []json.RawMessage{filterEventTypeInvalid}
 
 	confBytes, err := json.Marshal(conf)
 	suite.Require().NoError(err)
 
-	_, _, _, _, _, err = ParseJSONFilterConfig(confBytes)
+	_, _, _, err = ParseJSONFilterConfig(confBytes)
 
 	suite.Require().Error(err)
 
 	beginFilterEventTypeValid, err := getMockEventTypeBytes(false)
 	suite.Require().NoError(err)
 
-	conf.BeginBlockFilters = []json.RawMessage{beginFilterEventTypeValid}
+	conf.BlockFilters = []json.RawMessage{beginFilterEventTypeValid}
 
 	confBytes, err = json.Marshal(conf)
 	suite.Require().NoError(err)
 
-	beginBlockFilters, _, _, _, _, err := ParseJSONFilterConfig(confBytes)
+	blockFilters, _, _, err := ParseJSONFilterConfig(confBytes)
 
 	suite.Require().NoError(err)
-	suite.Require().Len(beginBlockFilters, 1)
-	suite.Require().True(beginBlockFilters[0].EventMatches(filter.EventData{Event: models.BlockEvent{BlockEventType: models.BlockEventType{Type: "coin_received"}}}))
-	suite.Require().False(beginBlockFilters[0].EventMatches(filter.EventData{Event: models.BlockEvent{BlockEventType: models.BlockEventType{Type: "dne"}}}))
+	suite.Require().Len(blockFilters, 1)
+	suite.Require().True(blockFilters[0].EventMatches(filter.EventData{Event: models.BlockEvent{BlockEventType: models.BlockEventType{Type: "coin_received"}}}))
+	suite.Require().False(blockFilters[0].EventMatches(filter.EventData{Event: models.BlockEvent{BlockEventType: models.BlockEventType{Type: "dne"}}}))
 
-	conf.BeginBlockFilters = []json.RawMessage{}
+	conf.BlockFilters = []json.RawMessage{}
 
 	messageTypeFilterInvalid, err := getMockMessageTypeBytes(true)
 	suite.Require().NoError(err)
@@ -55,7 +55,7 @@ func (suite *FilterConfigTestSuite) TestParseJSONFilterConfig() {
 	confBytes, err = json.Marshal(conf)
 	suite.Require().NoError(err)
 
-	_, _, _, _, _, err = ParseJSONFilterConfig(confBytes)
+	_, _, _, err = ParseJSONFilterConfig(confBytes)
 	suite.Require().Error(err)
 
 	messageTypeFilterValid, err := getMockMessageTypeBytes(false)
@@ -66,7 +66,7 @@ func (suite *FilterConfigTestSuite) TestParseJSONFilterConfig() {
 	confBytes, err = json.Marshal(conf)
 	suite.Require().NoError(err)
 
-	_, _, _, _, messageTypeFilters, err := ParseJSONFilterConfig(confBytes)
+	_, _, messageTypeFilters, err := ParseJSONFilterConfig(confBytes)
 
 	suite.Require().NoError(err)
 	suite.Require().Len(messageTypeFilters, 1)

@@ -4,11 +4,11 @@ import (
 	"errors"
 	"fmt"
 
-	probeClient "github.com/DefiantLabs/probe/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/tx"
+	probeClient "github.com/scalarorg/xchains-indexer/probe/client"
 )
 
 // Provides an in-app tx decoder.

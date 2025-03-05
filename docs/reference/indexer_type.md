@@ -9,7 +9,7 @@ For full implementation details, see the [indexer package](https://github.com/sc
 The `Indexer` type contains the following notable elements:
 
 1. A database connection
-2. A chain RPC client from the Probe [client package](https://github.com/DefiantLabs/probe/tree/main/client)
+2. A chain RPC client from the Probe [client package](https://github.com/xchains-indexer/probe/tree/main/client)
 3. A Block Enqueue function that handles passing block heights to be indexed to the processors
 4. Filter configurations according to the chain's [filter](../usage/filtering.md) configuration
 5. Custom Parser types for block events and transaction messages
@@ -45,9 +45,9 @@ The function takes a channel of `core.EnqueueData` and returns an error. The `co
 
 ```go
 type EnqueueData struct {
-	Height            int64
-	IndexBlockEvents  bool
-	IndexTransactions bool
+ Height            int64
+ IndexBlockEvents  bool
+ IndexTransactions bool
 }
 ```
 
@@ -69,7 +69,7 @@ However, if a customized Gorm instance is desired, the application will respect 
 
 ## Chain RPC Client - Probe Client Connection
 
-The application relies on the Probe [client package](https://github.com/DefiantLabs/probe/tree/main/client) for interacting with the chain's RPC node. The `Indexer` type contains a `Client` field that is a pointer to the Probe client.
+The application relies on the Probe [client package](https://github.com/xchains-indexer/probe/tree/main/client) for interacting with the chain's RPC node. The `Indexer` type contains a `Client` field that is a pointer to the Probe client.
 
 The client package provides functionality that uses built-in Cosmos SDK functionality to make requests to the chain's RPC for raw blockchain data.
 
