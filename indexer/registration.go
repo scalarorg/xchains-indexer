@@ -22,33 +22,17 @@ func (indexer *Indexer) RegisterCustomModels(models []any) {
 	indexer.CustomModels = append(indexer.CustomModels, models...)
 }
 
-func (indexer *Indexer) RegisterCustomBeginBlockEventParser(eventKey string, parser parsers.BlockEventParser) {
+func (indexer *Indexer) RegisterCustomBlockEventParser(eventKey string, parser parsers.BlockEventParser) {
 	var err error
-	indexer.CustomBeginBlockEventParserRegistry, indexer.CustomBeginBlockParserTrackers, err = customBlockEventRegistration(
-		indexer.CustomBeginBlockEventParserRegistry,
-		indexer.CustomBeginBlockParserTrackers,
+	indexer.CustomBlockEventParserRegistry, indexer.CustomBlockParserTrackers, err = customBlockEventRegistration(
+		indexer.CustomBlockEventParserRegistry,
+		indexer.CustomBlockParserTrackers,
 		eventKey,
 		parser,
-		models.BeginBlockEvent,
 	)
 
 	if err != nil {
 		config.Log.Fatal("Error registering BeginBlock custom parser", err)
-	}
-}
-
-func (indexer *Indexer) RegisterCustomEndBlockEventParser(eventKey string, parser parsers.BlockEventParser) {
-	var err error
-	indexer.CustomEndBlockEventParserRegistry, indexer.CustomEndBlockParserTrackers, err = customBlockEventRegistration(
-		indexer.CustomEndBlockEventParserRegistry,
-		indexer.CustomEndBlockParserTrackers,
-		eventKey,
-		parser,
-		models.EndBlockEvent,
-	)
-
-	if err != nil {
-		config.Log.Fatal("Error registering EndBlock custom parser", err)
 	}
 }
 
@@ -72,7 +56,7 @@ func (indexer *Indexer) RegisterCustomMessageParser(messageKey string, parser pa
 	}
 }
 
-func customBlockEventRegistration(registry map[string][]parsers.BlockEventParser, tracker map[string]models.BlockEventParser, eventKey string, parser parsers.BlockEventParser, lifecycleValue models.BlockLifecyclePosition) (map[string][]parsers.BlockEventParser, map[string]models.BlockEventParser, error) {
+func customBlockEventRegistration(registry map[string][]parsers.BlockEventParser, tracker map[string]models.BlockEventParser, eventKey string, parser parsers.BlockEventParser) (map[string][]parsers.BlockEventParser, map[string]models.BlockEventParser, error) {
 	if registry == nil {
 		registry = make(map[string][]parsers.BlockEventParser)
 	}
@@ -88,8 +72,7 @@ func customBlockEventRegistration(registry map[string][]parsers.BlockEventParser
 	}
 
 	tracker[parser.Identifier()] = models.BlockEventParser{
-		Identifier:             parser.Identifier(),
-		BlockLifecyclePosition: lifecycleValue,
+		Identifier: parser.Identifier(),
 	}
 	return registry, tracker, nil
 }

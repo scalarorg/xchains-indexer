@@ -1,9 +1,9 @@
 package probe
 
 import (
-	probeClient "github.com/DefiantLabs/probe/client"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/scalarorg/xchains-indexer/config"
+	probeClient "github.com/scalarorg/xchains-indexer/probe/client"
 )
 
 func GetProbeClient(conf config.Probe, appModuleBasicsExtensions []module.AppModuleBasic) *probeClient.ChainClient {
@@ -15,9 +15,9 @@ func GetProbeClient(conf config.Probe, appModuleBasicsExtensions []module.AppMod
 }
 
 // Will include the protos provided by the Probe package for Osmosis module interfaces
-func IncludeOsmosisInterfaces(client *probeClient.ChainClient) {
-	probeClient.RegisterOsmosisInterfaces(client.Codec.InterfaceRegistry)
-}
+// func IncludeOsmosisInterfaces(client *probeClient.ChainClient) {
+// 	probeClient.RegisterOsmosisInterfaces(client.Codec.InterfaceRegistry)
+// }
 
 // Will include the protos provided by the Probe package for Tendermint Liquidity module interfaces
 func IncludeTendermintInterfaces(client *probeClient.ChainClient) {

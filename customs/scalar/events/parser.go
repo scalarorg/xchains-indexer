@@ -60,19 +60,7 @@ const (
 )
 
 func ExtendEventsIndexer(indexer *indexer.Indexer) error {
-	beginBlockEventParsers := []parsers.BlockEventParser{
-		&MessageEventParser{
-			BaseParser: BaseParser{
-				Indexer: indexer,
-			},
-		},
-	}
-	for _, parser := range beginBlockEventParsers {
-		indexer.RegisterCustomBeginBlockEventParser(parser.Identifier(), parser)
-	}
-	registerBeginBlockEventMultisigParsers(indexer)
-
-	endBlockEventParsers := []parsers.BlockEventParser{
+	blockEventParsers := []parsers.BlockEventParser{
 		&MessageEventParser{
 			BaseParser: BaseParser{
 				Id:      EVENT_TYPE_MESSAGE,
@@ -80,19 +68,19 @@ func ExtendEventsIndexer(indexer *indexer.Indexer) error {
 			},
 		},
 	}
-	for _, parser := range endBlockEventParsers {
-		indexer.RegisterCustomEndBlockEventParser(parser.Identifier(), parser)
+	for _, parser := range blockEventParsers {
+		indexer.RegisterCustomBlockEventParser(parser.Identifier(), parser)
 	}
-	registerEndBlockEventParsersCosmos(indexer)
-	registerEndBlockEventParsersNexus(indexer)
-	registerEndBlockEventParsersCovenant(indexer)
-	registerEndBlockEventParsersChains(indexer)
-	registerEndBlockEventParsersMultisig(indexer)
-	registerEndBlockEventParsersScalarnet(indexer)
-	registerEndBlockEventParsersVoted(indexer)
+	registerBlockEventParsersCosmos(indexer)
+	registerBlockEventParsersNexus(indexer)
+	registerBlockEventParsersCovenant(indexer)
+	registerBlockEventParsersChains(indexer)
+	registerBlockEventParsersMultisig(indexer)
+	registerBlockEventParsersScalarnet(indexer)
+	registerBlockEventParsersVoted(indexer)
 	return nil
 }
-func registerEndBlockEventParsersCosmos(indexer *indexer.Indexer) {
+func registerBlockEventParsersCosmos(indexer *indexer.Indexer) {
 	parsers := []parsers.BlockEventParser{
 		&HeartBeatParser{
 			BaseParser: BaseParser{
@@ -102,10 +90,10 @@ func registerEndBlockEventParsersCosmos(indexer *indexer.Indexer) {
 		},
 	}
 	for _, parser := range parsers {
-		indexer.RegisterCustomEndBlockEventParser(parser.Identifier(), parser)
+		indexer.RegisterCustomBlockEventParser(parser.Identifier(), parser)
 	}
 }
-func registerEndBlockEventParsersChains(indexer *indexer.Indexer) {
+func registerBlockEventParsersChains(indexer *indexer.Indexer) {
 	parsers := []parsers.BlockEventParser{
 		&TokenConfirmationParser{
 			BaseParser: BaseParser{
@@ -235,11 +223,11 @@ func registerEndBlockEventParsersChains(indexer *indexer.Indexer) {
 		},
 	}
 	for _, parser := range parsers {
-		indexer.RegisterCustomEndBlockEventParser(parser.Identifier(), parser)
+		indexer.RegisterCustomBlockEventParser(parser.Identifier(), parser)
 	}
 }
 
-func registerEndBlockEventParsersMultisig(indexer *indexer.Indexer) {
+func registerBlockEventParsersMultisig(indexer *indexer.Indexer) {
 	parsers := []parsers.BlockEventParser{
 		&KeygenStartedParser{
 			BaseParser: BaseParser{
@@ -315,23 +303,11 @@ func registerEndBlockEventParsersMultisig(indexer *indexer.Indexer) {
 		},
 	}
 	for _, parser := range parsers {
-		indexer.RegisterCustomEndBlockEventParser(parser.Identifier(), parser)
+		indexer.RegisterCustomBlockEventParser(parser.Identifier(), parser)
 	}
 }
-func registerBeginBlockEventMultisigParsers(indexer *indexer.Indexer) {
-	parsers := []parsers.BlockEventParser{
-		&KeygenStartedParser{
-			BaseParser: BaseParser{
-				Id:      EVENT_TYPE_KEYGEN_STARTED,
-				Indexer: indexer,
-			},
-		},
-	}
-	for _, parser := range parsers {
-		indexer.RegisterCustomBeginBlockEventParser(parser.Identifier(), parser)
-	}
-}
-func registerEndBlockEventParsersCovenant(indexer *indexer.Indexer) {
+
+func registerBlockEventParsersCovenant(indexer *indexer.Indexer) {
 	parsers := []parsers.BlockEventParser{
 		&SigningPsbtStartedParser{
 			BaseParser: BaseParser{
@@ -365,11 +341,11 @@ func registerEndBlockEventParsersCovenant(indexer *indexer.Indexer) {
 		},
 	}
 	for _, parser := range parsers {
-		indexer.RegisterCustomEndBlockEventParser(parser.Identifier(), parser)
+		indexer.RegisterCustomBlockEventParser(parser.Identifier(), parser)
 	}
 }
 
-func registerEndBlockEventParsersScalarnet(indexer *indexer.Indexer) {
+func registerBlockEventParsersScalarnet(indexer *indexer.Indexer) {
 	parsers := []parsers.BlockEventParser{
 		&ContractCallSubmittedParser{
 			BaseParser: BaseParser{
@@ -397,11 +373,11 @@ func registerEndBlockEventParsersScalarnet(indexer *indexer.Indexer) {
 		},
 	}
 	for _, parser := range parsers {
-		indexer.RegisterCustomEndBlockEventParser(parser.Identifier(), parser)
+		indexer.RegisterCustomBlockEventParser(parser.Identifier(), parser)
 	}
 }
 
-func registerEndBlockEventParsersNexus(indexer *indexer.Indexer) {
+func registerBlockEventParsersNexus(indexer *indexer.Indexer) {
 	parsers := []parsers.BlockEventParser{
 		// &MessageProcessingEventParser{
 		// 	BaseParser: BaseParser{
@@ -423,11 +399,11 @@ func registerEndBlockEventParsersNexus(indexer *indexer.Indexer) {
 		},
 	}
 	for _, parser := range parsers {
-		indexer.RegisterCustomEndBlockEventParser(parser.Identifier(), parser)
+		indexer.RegisterCustomBlockEventParser(parser.Identifier(), parser)
 	}
 }
 
-func registerEndBlockEventParsersVoted(indexer *indexer.Indexer) {
+func registerBlockEventParsersVoted(indexer *indexer.Indexer) {
 	parsers := []parsers.BlockEventParser{
 		&VotedParser{
 			BaseParser: BaseParser{
@@ -437,6 +413,6 @@ func registerEndBlockEventParsersVoted(indexer *indexer.Indexer) {
 		},
 	}
 	for _, parser := range parsers {
-		indexer.RegisterCustomEndBlockEventParser(parser.Identifier(), parser)
+		indexer.RegisterCustomBlockEventParser(parser.Identifier(), parser)
 	}
 }

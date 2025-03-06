@@ -29,7 +29,7 @@ func (indexer *Indexer) ProcessBlocks(wg *sync.WaitGroup, failedBlockHandler cor
 		}
 
 		if blockData.IndexBlockEvents && !blockData.BlockEventRequestsFailed {
-			blockDBWrapper, err := core.ProcessRPCBlockResults(*indexer.Config, block, blockData.BlockResultsData, indexer.CustomBeginBlockEventParserRegistry, indexer.CustomEndBlockEventParserRegistry)
+			blockDBWrapper, err := core.ProcessRPCBlockResults(*indexer.Config, block, blockData.BlockResultsData, indexer.CustomBlockEventParserRegistry)
 			if err != nil {
 				config.Log.Errorf("Failed to process block events during block %d event processing, adding to failed block events table", currentHeight)
 				failedBlockHandler(currentHeight, core.FailedBlockEventHandling, err)
@@ -41,12 +41,8 @@ func (indexer *Indexer) ProcessBlocks(wg *sync.WaitGroup, failedBlockHandler cor
 				// config.Log.Infof("Finished parsing block event data for block %d", currentHeight)
 				var beginBlockFilterError error
 				var endBlockFilterError error
-				if blockEventFilterRegistry.BeginBlockEventFilterRegistry != nil && blockEventFilterRegistry.BeginBlockEventFilterRegistry.NumFilters() > 0 {
-					blockDBWrapper.BeginBlockEvents, beginBlockFilterError = core.FilterRPCBlockEvents(blockDBWrapper.BeginBlockEvents, *blockEventFilterRegistry.BeginBlockEventFilterRegistry)
-				}
-
-				if blockEventFilterRegistry.EndBlockEventFilterRegistry != nil && blockEventFilterRegistry.EndBlockEventFilterRegistry.NumFilters() > 0 {
-					blockDBWrapper.EndBlockEvents, endBlockFilterError = core.FilterRPCBlockEvents(blockDBWrapper.EndBlockEvents, *blockEventFilterRegistry.EndBlockEventFilterRegistry)
+				if blockEventFilterRegistry.BlockEventFilterRegistry != nil && blockEventFilterRegistry.BlockEventFilterRegistry.NumFilters() > 0 {
+					blockDBWrapper.BlockEvents, beginBlockFilterError = core.FilterRPCBlockEvents(blockDBWrapper.BlockEvents, *blockEventFilterRegistry.BlockEventFilterRegistry)
 				}
 
 				if beginBlockFilterError == nil && endBlockFilterError == nil {

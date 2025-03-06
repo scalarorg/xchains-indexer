@@ -122,8 +122,7 @@ func setupIndex(cmd *cobra.Command, args []string) error {
 	indexer.DryRun = indexer.Config.Base.Dry
 
 	indexer.BlockEventFilterRegistries = indexerPackage.BlockEventFilterRegistries{
-		BeginBlockEventFilterRegistry: &filter.StaticBlockEventFilterRegistry{},
-		EndBlockEventFilterRegistry:   &filter.StaticBlockEventFilterRegistry{},
+		BlockEventFilterRegistry: &filter.StaticBlockEventFilterRegistry{},
 	}
 
 	if indexer.Config.Base.FilterFile != "" {
@@ -141,10 +140,8 @@ func setupIndex(cmd *cobra.Command, args []string) error {
 
 		var fileMessageTypeFilters []filter.MessageTypeFilter
 
-		indexer.BlockEventFilterRegistries.BeginBlockEventFilterRegistry.BlockEventFilters,
-			indexer.BlockEventFilterRegistries.BeginBlockEventFilterRegistry.RollingWindowEventFilters,
-			indexer.BlockEventFilterRegistries.EndBlockEventFilterRegistry.BlockEventFilters,
-			indexer.BlockEventFilterRegistries.EndBlockEventFilterRegistry.RollingWindowEventFilters,
+		indexer.BlockEventFilterRegistries.BlockEventFilterRegistry.BlockEventFilters,
+			indexer.BlockEventFilterRegistries.BlockEventFilterRegistry.RollingWindowEventFilters,
 			fileMessageTypeFilters,
 			err = config.ParseJSONFilterConfig(b)
 
@@ -164,16 +161,8 @@ func setupIndex(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	if len(indexer.CustomBeginBlockParserTrackers) != 0 {
-		err = dbTypes.FindOrCreateCustomBlockEventParsers(indexer.DB, indexer.CustomBeginBlockParserTrackers)
-		if err != nil {
-			safeCleanupSetupExit(&indexer)
-			config.Log.Fatal("Failed to migrate custom block event parsers", err)
-		}
-	}
-
-	if len(indexer.CustomEndBlockParserTrackers) != 0 {
-		err = dbTypes.FindOrCreateCustomBlockEventParsers(indexer.DB, indexer.CustomEndBlockParserTrackers)
+	if len(indexer.CustomBlockParserTrackers) != 0 {
+		err = dbTypes.FindOrCreateCustomBlockEventParsers(indexer.DB, indexer.CustomBlockParserTrackers)
 		if err != nil {
 			safeCleanupSetupExit(&indexer)
 			config.Log.Fatal("Failed to migrate custom block event parsers", err)

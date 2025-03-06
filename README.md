@@ -63,7 +63,7 @@ The Base section contains the core settings for the tool, such as API endpoints,
 
 #### Probe
 
-The probe section configures [probe](https://github.com/DefiantLabs/probe) used by the tool to read data from the blockchain. This is built into the application and doesn't need to be installed separately.
+The probe section configures [probe](https://github.com/xchains-indexer/probe) used by the tool to read data from the blockchain. This is built into the application and doesn't need to be installed separately.
 
 For detailed descriptions of each setting in these sections, please refer to the [Detailed Config Explanation](#detailed-config-explanation) section below.
 

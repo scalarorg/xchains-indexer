@@ -38,8 +38,7 @@ func SingleBlockEventFilterIncludes(val string) bool {
 }
 
 type blockFilterConfigs struct {
-	BeginBlockFilters  []json.RawMessage `json:"begin_block_filters,omitempty"`
-	EndBlockFilters    []json.RawMessage `json:"end_block_filters,omitempty"`
+	BlockFilters       []json.RawMessage `json:"block_filters,omitempty"`
 	MessageTypeFilters []json.RawMessage `json:"message_type_filters,omitempty"`
 }
 
@@ -54,34 +53,29 @@ type MessageTypeFilterConfig struct {
 	Pattern string `json:"pattern"`
 }
 
-func ParseJSONFilterConfig(configJSON []byte) ([]filter.BlockEventFilter, []filter.RollingWindowBlockEventFilter, []filter.BlockEventFilter, []filter.RollingWindowBlockEventFilter, []filter.MessageTypeFilter, error) {
+func ParseJSONFilterConfig(configJSON []byte) ([]filter.BlockEventFilter, []filter.RollingWindowBlockEventFilter, []filter.MessageTypeFilter, error) {
 	config := blockFilterConfigs{}
 	err := json.Unmarshal(configJSON, &config)
 	if err != nil {
-		return nil, nil, nil, nil, nil, err
+		return nil, nil, nil, err
 	}
 
-	beginBlockSingleEventFilters, beginBlockRollingWindowFilters, err := ParseLifecycleConfig(config.BeginBlockFilters)
+	blockSingleEventFilters, blockRollingWindowFilters, err := ParseBlockFilters(config.BlockFilters)
 	if err != nil {
-		newErr := fmt.Errorf("error parsing begin_block_filters: %s", err)
-		return nil, nil, nil, nil, nil, newErr
-	}
-	endBlockSingleEventFilters, endBlockRollingWindowFilters, err := ParseLifecycleConfig(config.EndBlockFilters)
-	if err != nil {
-		newErr := fmt.Errorf("error parsing end_block_filters: %s", err)
-		return nil, nil, nil, nil, nil, newErr
+		newErr := fmt.Errorf("error parsing block_filters: %s", err)
+		return nil, nil, nil, newErr
 	}
 
 	messageTypeFilters, err := ParseTXMessageTypeConfig(config.MessageTypeFilters)
 	if err != nil {
 		newErr := fmt.Errorf("error parsing message_type_filters: %s", err)
-		return nil, nil, nil, nil, nil, newErr
+		return nil, nil, nil, newErr
 	}
 
-	return beginBlockSingleEventFilters, beginBlockRollingWindowFilters, endBlockSingleEventFilters, endBlockRollingWindowFilters, messageTypeFilters, nil
+	return blockSingleEventFilters, blockRollingWindowFilters, messageTypeFilters, nil
 }
 
-func ParseLifecycleConfig(lifecycleConfig []json.RawMessage) ([]filter.BlockEventFilter, []filter.RollingWindowBlockEventFilter, error) {
+func ParseBlockFilters(lifecycleConfig []json.RawMessage) ([]filter.BlockEventFilter, []filter.RollingWindowBlockEventFilter, error) {
 	rollingWindowFilters := []filter.RollingWindowBlockEventFilter{}
 	singleEventFilters := []filter.BlockEventFilter{}
 	for index, beginFilters := range lifecycleConfig {

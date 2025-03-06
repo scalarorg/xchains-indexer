@@ -90,30 +90,17 @@ func IndexBlockEvents(db *gorm.DB, dryRun bool, blockDBWrapper *BlockDBWrapper, 
 		}
 
 		// Loop through begin and end block arrays and apply the block ID and event type ID
-		beginBlockEvents := make([]*models.BlockEvent, len(blockDBWrapper.BeginBlockEvents))
-		for index := range blockDBWrapper.BeginBlockEvents {
-			blockDBWrapper.BeginBlockEvents[index].BlockEvent.Block = *blockDBWrapper.Block
-			blockDBWrapper.BeginBlockEvents[index].BlockEvent.BlockID = blockDBWrapper.Block.ID
-			blockDBWrapper.BeginBlockEvents[index].BlockEvent.BlockEventType = blockDBWrapper.UniqueBlockEventTypes[blockDBWrapper.BeginBlockEvents[index].BlockEvent.BlockEventType.Type]
-			beginBlockEvents[index] = &blockDBWrapper.BeginBlockEvents[index].BlockEvent
+		blockEvents := make([]*models.BlockEvent, len(blockDBWrapper.BlockEvents))
+		for index := range blockDBWrapper.BlockEvents {
+			blockDBWrapper.BlockEvents[index].BlockEvent.Block = *blockDBWrapper.Block
+			blockDBWrapper.BlockEvents[index].BlockEvent.BlockID = blockDBWrapper.Block.ID
+			blockDBWrapper.BlockEvents[index].BlockEvent.BlockEventType = blockDBWrapper.UniqueBlockEventTypes[blockDBWrapper.BlockEvents[index].BlockEvent.BlockEventType.Type]
+			blockEvents[index] = &blockDBWrapper.BlockEvents[index].BlockEvent
 		}
-
-		endBlockEvents := make([]*models.BlockEvent, len(blockDBWrapper.EndBlockEvents))
-		for index := range blockDBWrapper.EndBlockEvents {
-			blockDBWrapper.EndBlockEvents[index].BlockEvent.Block = *blockDBWrapper.Block
-			blockDBWrapper.EndBlockEvents[index].BlockEvent.BlockID = blockDBWrapper.Block.ID
-			blockDBWrapper.EndBlockEvents[index].BlockEvent.BlockEventType = blockDBWrapper.UniqueBlockEventTypes[blockDBWrapper.EndBlockEvents[index].BlockEvent.BlockEventType.Type]
-			endBlockEvents[index] = &blockDBWrapper.EndBlockEvents[index].BlockEvent
-		}
-
-		// Bulk insert the block events
-		allBlockEvents := make([]*models.BlockEvent, len(beginBlockEvents)+len(endBlockEvents))
-		copy(allBlockEvents, beginBlockEvents)
-		copy(allBlockEvents[len(beginBlockEvents):], endBlockEvents)
 
 		// TODO: Should consider the on conflict values here, do we want to provide the user with some control over the behavior here?
 		// Something similar to our reindex flag may be appropriate, unless we just want to have that pre-check the block has already been indexed.
-		if len(allBlockEvents) != 0 {
+		if len(blockEvents) != 0 {
 			// This clause forces a return of ID for all items even on conflict
 			// We need this so that we can then create the proper associations with the attributes below
 			if err := dbTransaction.Clauses(
@@ -122,29 +109,17 @@ func IndexBlockEvents(db *gorm.DB, dryRun bool, blockDBWrapper *BlockDBWrapper, 
 					// Force update of block event type ID
 					DoUpdates: clause.AssignmentColumns([]string{"block_event_type_id"}),
 				},
-			).Create(&allBlockEvents).Error; err != nil {
+			).Create(&blockEvents).Error; err != nil {
 				config.Log.Error("Error creating begin block events.", err)
 				return err
 			}
 
 			var allAttributes []*models.BlockEventAttribute
-			for index := range blockDBWrapper.BeginBlockEvents {
-				currAttributes := blockDBWrapper.BeginBlockEvents[index].Attributes
+			for index := range blockDBWrapper.BlockEvents {
+				currAttributes := blockDBWrapper.BlockEvents[index].Attributes
 				for attrIndex := range currAttributes {
-					currAttributes[attrIndex].BlockEventID = blockDBWrapper.BeginBlockEvents[index].BlockEvent.ID
-					currAttributes[attrIndex].BlockEvent = blockDBWrapper.BeginBlockEvents[index].BlockEvent
-					currAttributes[attrIndex].BlockEventAttributeKey = blockDBWrapper.UniqueBlockEventAttributeKeys[currAttributes[attrIndex].BlockEventAttributeKey.Key]
-				}
-				for ii := range currAttributes {
-					allAttributes = append(allAttributes, &currAttributes[ii])
-				}
-			}
-
-			for index := range blockDBWrapper.EndBlockEvents {
-				currAttributes := blockDBWrapper.EndBlockEvents[index].Attributes
-				for attrIndex := range currAttributes {
-					currAttributes[attrIndex].BlockEventID = blockDBWrapper.EndBlockEvents[index].BlockEvent.ID
-					currAttributes[attrIndex].BlockEvent = blockDBWrapper.EndBlockEvents[index].BlockEvent
+					currAttributes[attrIndex].BlockEventID = blockDBWrapper.BlockEvents[index].BlockEvent.ID
+					currAttributes[attrIndex].BlockEvent = blockDBWrapper.BlockEvents[index].BlockEvent
 					currAttributes[attrIndex].BlockEventAttributeKey = blockDBWrapper.UniqueBlockEventAttributeKeys[currAttributes[attrIndex].BlockEventAttributeKey.Key]
 				}
 				for ii := range currAttributes {
@@ -171,19 +146,12 @@ func IndexBlockEvents(db *gorm.DB, dryRun bool, blockDBWrapper *BlockDBWrapper, 
 	return blockDBWrapper, err
 }
 
-func IndexCustomBlockEvents(conf config.IndexConfig, db *gorm.DB, dryRun bool, blockDBWrapper *BlockDBWrapper, identifierLoggingString string, beginBlockParserTrackers map[string]models.BlockEventParser, endBlockParserTrackers map[string]models.BlockEventParser) error {
+func IndexCustomBlockEvents(conf config.IndexConfig, db *gorm.DB, dryRun bool, blockDBWrapper *BlockDBWrapper, identifierLoggingString string, blockParserTrackers map[string]models.BlockEventParser) error {
 	return db.Transaction(func(dbTransaction *gorm.DB) error {
 		// call generic function below
-		err := indexLifecycleCustomBlockEvents(dbTransaction, conf, blockDBWrapper, blockDBWrapper.BeginBlockEvents, beginBlockParserTrackers)
+		err := indexLifecycleCustomBlockEvents(dbTransaction, conf, blockDBWrapper, blockDBWrapper.BlockEvents, blockParserTrackers)
 		if err != nil {
 			config.Log.Error("Error indexing begin block events.", err)
-			return err
-		}
-
-		// do the same here
-		err = indexLifecycleCustomBlockEvents(dbTransaction, conf, blockDBWrapper, blockDBWrapper.EndBlockEvents, endBlockParserTrackers)
-		if err != nil {
-			config.Log.Error("Error indexing end block events.", err)
 			return err
 		}
 

@@ -3,90 +3,62 @@ package messages
 import (
 	"log"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	common "github.com/scalarorg/xchains-indexer/customs/scalar/common"
+	"github.com/cosmos/cosmos-sdk/codec"
+	gogoprototypes "github.com/gogo/protobuf/types"
+	chainsTypes "github.com/scalarorg/scalar-core/x/chains/types"
+	covenantExported "github.com/scalarorg/scalar-core/x/covenant/exported"
+	covenantTypes "github.com/scalarorg/scalar-core/x/covenant/types"
+	multisigTypes "github.com/scalarorg/scalar-core/x/multisig/types"
+	"github.com/scalarorg/xchains-indexer/customs/scalar/messages/chains"
+	"github.com/scalarorg/xchains-indexer/customs/scalar/messages/covenant"
+	"github.com/scalarorg/xchains-indexer/customs/scalar/messages/multisig"
+	"github.com/scalarorg/xchains-indexer/customs/scalar/messages/reward"
+	"github.com/scalarorg/xchains-indexer/customs/scalar/messages/tss"
+	"github.com/scalarorg/xchains-indexer/customs/scalar/messages/vote"
 	"github.com/scalarorg/xchains-indexer/filter"
 	"github.com/scalarorg/xchains-indexer/indexer"
-	"github.com/scalarorg/xchains-indexer/parsers"
-	evmTypes "github.com/scalarorg/xchains-indexer/x/evm/types"
-	nexusTypes "github.com/scalarorg/xchains-indexer/x/nexus/types"
-	rewardTypes "github.com/scalarorg/xchains-indexer/x/reward/types"
-	voteTypes "github.com/scalarorg/xchains-indexer/x/vote/types"
 )
 
 const (
-	EVENT_TYPE_MESSAGE string = "message"
+	ERR_FAILED_TO_CREATE_REGEX_MESSAGE_TYPE_FILTER string = "failed to create regex message type filter. Err: %v"
+	EVENT_TYPE_MESSAGE                             string = "message"
 )
 
 func ExtendMessagesIndexer(instance *indexer.Indexer) error {
-	var filters []filter.MessageTypeFilter
-	customParsers := make(map[string]parsers.MessageParser)
-
-	// basic
-	basicRegexMessageTypeFilter, err := filter.NewRegexMessageTypeFilter("^/" + "cosmos.staking.v1beta1.MsgCreateValidator" + "$")
+	//Register all message types
+	scalarFilter, err := filter.NewRegexMessageTypeFilter("^/scalar.*.v1beta1.*")
 	if err != nil {
-		log.Fatalf("Failed to create regex message type filter. Err: %v", err)
+		log.Fatalf(ERR_FAILED_TO_CREATE_REGEX_MESSAGE_TYPE_FILTER, err)
 		return err
 	}
-	filters = append(filters, basicRegexMessageTypeFilter)
+	instance.RegisterMessageTypeFilter(scalarFilter)
 
-	// Extend RefundMsgRequest parser
-	requestRegexMessageTypeFilter, err := filter.NewRegexMessageTypeFilter("^/" + rewardTypes.MSG_REWARD_REFUND_MSG_REQUEST + "$")
-	if err != nil {
-		log.Fatalf("Failed to create regex message type filter. Err: %v", err)
-		return err
-	}
-	filters = append(filters, requestRegexMessageTypeFilter)
-	customParsers["/"+rewardTypes.MSG_REWARD_REFUND_MSG_REQUEST] = &RefundMsgRequestParser{
-		Id:      "refund-msg-request",
-		Indexer: instance,
-	}
+	chains.ExtendMessagesIndexerChains(instance)
+	covenant.ExtendMessagesIndexerCovenant(instance)
+	multisig.ExtendMessagesIndexerMultisig(instance)
+	reward.ExtendMessagesIndexerReward(instance)
+	tss.ExtendMessagesIndexerTss(instance)
+	vote.ExtendMessagesIndexerVote(instance)
 
-	// Extend refund VoteRequest parser
-	voteRequestFilter, err := filter.NewRegexMessageTypeFilter("^/" + voteTypes.MSG_VOTE_REQUEST + "$")
-	if err != nil {
-		log.Fatalf("Failed to create regex message type filter. Err: %v", err)
-		return err
-	}
-	filters = append(filters, voteRequestFilter)
-	customParsers["/"+voteTypes.MSG_VOTE_REQUEST] = &VoteRequestParser{
-		Id:      "vote-request",
-		Indexer: instance,
-	}
+	extendMessagesIndexerTokens(instance)
 
-	// Extend refund VoteEvents parser
-	voteEventsFilter, err := filter.NewRegexMessageTypeFilter("^/" + evmTypes.MSG_EVM_VOTE_EVENTS + "$")
-	if err != nil {
-		log.Fatalf("Failed to create regex message type filter. Err: %v", err)
-		return err
-	}
-	filters = append(filters, voteEventsFilter)
-	customParsers["/"+evmTypes.MSG_EVM_VOTE_EVENTS] = &VoteEventsParser{
-		Id:      "vote-events",
-		Indexer: instance,
-	}
-
-	// Add RegisterChainMaintainerRequest parser
-	customParsers["/"+nexusTypes.MSG_NEXUS_REGISTER_CHAIN_MAINTAINER_REQUEST] = &RegisterChainMaintainerRequestParser{
-		Id:      "register-chain-maintainer-request",
-		Indexer: instance,
-	}
-
-	for _, filter := range filters {
-		instance.RegisterMessageTypeFilter(filter)
-	}
-	for key, parser := range customParsers {
-		instance.RegisterCustomMessageParser(key, parser)
-	}
 	instance.PostSetupCustomFunction = func(dataset indexer.PostSetupCustomDataset) error {
-		// Register msg types for the custom messages
-		dataset.DB.AutoMigrate(&common.TxMessage{})
-		if instance.ChainClient != nil {
-			instance.ChainClient.Codec.InterfaceRegistry.RegisterInterface(rewardTypes.MSG_REWARD_REFUND_MSG_REQUEST, (*sdk.Msg)(nil), &rewardTypes.RefundMsgRequest{})
-			instance.ChainClient.Codec.InterfaceRegistry.RegisterInterface(voteTypes.MSG_VOTE_REQUEST, (*sdk.Msg)(nil), &voteTypes.VoteRequest{})
-			instance.ChainClient.Codec.InterfaceRegistry.RegisterInterface(evmTypes.MSG_EVM_VOTE_EVENTS, (*sdk.Msg)(nil), &evmTypes.VoteEvents{})
-			instance.ChainClient.Codec.InterfaceRegistry.RegisterInterface(nexusTypes.MSG_NEXUS_REGISTER_CHAIN_MAINTAINER_REQUEST, (*sdk.Msg)(nil), &nexusTypes.RegisterChainMaintainerRequest{})
-		}
+		chains.PostSetupCustomFunctionChains(instance, &dataset)
+		covenant.PostSetupCustomFunctionCovenant(instance, &dataset)
+		multisig.PostSetupCustomFunctionMultisig(instance, &dataset)
+		reward.PostSetupCustomFunctionReward(instance, &dataset)
+		tss.PostSetupCustomFunctionTss(instance, &dataset)
+		vote.PostSetupCustomFunctionVote(instance, &dataset)
+		instance.ChainClient.Codec.InterfaceRegistry.RegisterImplementations((*codec.ProtoMarshaler)(nil),
+			&gogoprototypes.BoolValue{},
+			&chainsTypes.SigMetadata{},
+			&chainsTypes.Event{},
+			&chainsTypes.VoteEvents{},
+			&chainsTypes.PollMetadata{},
+			&covenantTypes.PsbtMultiSig{},
+			&covenantExported.TapScriptSigsList{},
+			&multisigTypes.MultiSig{},
+		)
 		return nil
 	}
 	return nil

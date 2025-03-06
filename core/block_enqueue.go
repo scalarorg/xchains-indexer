@@ -8,10 +8,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/DefiantLabs/probe/client"
 	"github.com/scalarorg/xchains-indexer/config"
 	dbTypes "github.com/scalarorg/xchains-indexer/db"
 	"github.com/scalarorg/xchains-indexer/db/models"
+	"github.com/scalarorg/xchains-indexer/probe/client"
 	"github.com/scalarorg/xchains-indexer/rpc"
 	"github.com/scalarorg/xchains-indexer/utils"
 	"gorm.io/gorm"
