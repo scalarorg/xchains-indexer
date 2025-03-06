@@ -204,7 +204,7 @@ func ProcessRPCTXs(cfg *config.IndexConfig, db *gorm.DB, cl *client.ChainClient,
 
 		currTx := txEventResp.Txs[txIdx]
 		currTxResp := txEventResp.TxResponses[txIdx]
-		config.Log.Debug(fmt.Sprintf("[Block: %v] [TX: %v] Indexing msgs '%v'.", currTxResp.Height, currTxResp.TxHash, currTx.Body.Messages))
+		config.Log.Debug(fmt.Sprintf("[Block: %v] [TX: %v] Indexing msgs '%++v'.", currTxResp.Height, currTxResp.TxHash, currTx.Body.Messages))
 
 		if len(currTxResp.Logs) == 0 && len(currTxResp.Events) != 0 {
 			// We have a version of Cosmos SDK that removed the Logs field from the TxResponse, we need to parse the events into message index logs

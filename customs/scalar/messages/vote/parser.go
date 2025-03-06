@@ -4,6 +4,7 @@ import (
 	"log"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	rewardExported "github.com/scalarorg/scalar-core/x/reward/exported"
 	voteTypes "github.com/scalarorg/scalar-core/x/vote/types"
 	"github.com/scalarorg/xchains-indexer/customs/scalar/common"
 	"github.com/scalarorg/xchains-indexer/filter"
@@ -18,7 +19,7 @@ const (
 )
 
 func ExtendMessagesIndexerVote(instance *indexer.Indexer) {
-	messageTypeFilter, err := filter.NewRegexMessageTypeFilter("/scalar.vote.v1beta1.*")
+	messageTypeFilter, err := filter.NewRegexMessageTypeFilter(MSG_SCALAR_VOTE_CHAINS_FILTER)
 	if err == nil {
 		instance.RegisterMessageTypeFilter(messageTypeFilter)
 	} else {
@@ -38,8 +39,11 @@ func ExtendMessagesIndexerVote(instance *indexer.Indexer) {
 }
 
 func PostSetupCustomFunctionVote(instance *indexer.Indexer, dataset *indexer.PostSetupCustomDataset) {
-	dataset.DB.AutoMigrate()
+	dataset.DB.AutoMigrate(
+		&VoteRequestMsg{},
+	)
 	if instance.ChainClient != nil {
+		instance.ChainClient.Codec.InterfaceRegistry.RegisterImplementations((*rewardExported.Refundable)(nil), &voteTypes.VoteRequest{})
 		instance.ChainClient.Codec.InterfaceRegistry.RegisterInterface(MSG_SCALAR_VOTE_REQUEST, (*sdk.Msg)(nil), &voteTypes.VoteRequest{})
 	}
 }

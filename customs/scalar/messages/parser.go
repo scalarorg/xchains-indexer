@@ -3,8 +3,17 @@ package messages
 import (
 	"log"
 
+	"github.com/cosmos/cosmos-sdk/codec"
+	gogoprototypes "github.com/gogo/protobuf/types"
+	chainsTypes "github.com/scalarorg/scalar-core/x/chains/types"
+	covenantExported "github.com/scalarorg/scalar-core/x/covenant/exported"
+	covenantTypes "github.com/scalarorg/scalar-core/x/covenant/types"
+	multisigTypes "github.com/scalarorg/scalar-core/x/multisig/types"
 	"github.com/scalarorg/xchains-indexer/customs/scalar/messages/chains"
+	"github.com/scalarorg/xchains-indexer/customs/scalar/messages/covenant"
+	"github.com/scalarorg/xchains-indexer/customs/scalar/messages/multisig"
 	"github.com/scalarorg/xchains-indexer/customs/scalar/messages/reward"
+	"github.com/scalarorg/xchains-indexer/customs/scalar/messages/tss"
 	"github.com/scalarorg/xchains-indexer/customs/scalar/messages/vote"
 	"github.com/scalarorg/xchains-indexer/filter"
 	"github.com/scalarorg/xchains-indexer/indexer"
@@ -23,15 +32,33 @@ func ExtendMessagesIndexer(instance *indexer.Indexer) error {
 		return err
 	}
 	instance.RegisterMessageTypeFilter(scalarFilter)
-	reward.ExtendMessagesIndexerReward(instance)
+
 	chains.ExtendMessagesIndexerChains(instance)
+	covenant.ExtendMessagesIndexerCovenant(instance)
+	multisig.ExtendMessagesIndexerMultisig(instance)
+	reward.ExtendMessagesIndexerReward(instance)
+	tss.ExtendMessagesIndexerTss(instance)
 	vote.ExtendMessagesIndexerVote(instance)
+
 	extendMessagesIndexerTokens(instance)
 
 	instance.PostSetupCustomFunction = func(dataset indexer.PostSetupCustomDataset) error {
-		reward.PostSetupCustomFunctionReward(instance, &dataset)
 		chains.PostSetupCustomFunctionChains(instance, &dataset)
+		covenant.PostSetupCustomFunctionCovenant(instance, &dataset)
+		multisig.PostSetupCustomFunctionMultisig(instance, &dataset)
+		reward.PostSetupCustomFunctionReward(instance, &dataset)
+		tss.PostSetupCustomFunctionTss(instance, &dataset)
 		vote.PostSetupCustomFunctionVote(instance, &dataset)
+		instance.ChainClient.Codec.InterfaceRegistry.RegisterImplementations((*codec.ProtoMarshaler)(nil),
+			&gogoprototypes.BoolValue{},
+			&chainsTypes.SigMetadata{},
+			&chainsTypes.Event{},
+			&chainsTypes.VoteEvents{},
+			&chainsTypes.PollMetadata{},
+			&covenantTypes.PsbtMultiSig{},
+			&covenantExported.TapScriptSigsList{},
+			&multisigTypes.MultiSig{},
+		)
 		return nil
 	}
 	return nil

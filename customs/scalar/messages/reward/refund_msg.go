@@ -1,17 +1,16 @@
 package reward
 
 import (
-	"encoding/json"
 	"errors"
 
 	stdTypes "github.com/cosmos/cosmos-sdk/types"
+	rewardTypes "github.com/scalarorg/scalar-core/x/reward/types"
 	"github.com/scalarorg/xchains-indexer/config"
 	indexerTxTypes "github.com/scalarorg/xchains-indexer/cosmos/modules/tx"
 	common "github.com/scalarorg/xchains-indexer/customs/scalar/common"
 	"github.com/scalarorg/xchains-indexer/db/models"
 	"github.com/scalarorg/xchains-indexer/parsers"
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 // This defines the custom message parser for the call contract approve message type
@@ -22,14 +21,15 @@ type RefundMsgRequestParser struct {
 
 func (p *RefundMsgRequestParser) ParseMessage(sdkMsg stdTypes.Msg, messageLog *indexerTxTypes.LogMessage, cfg config.IndexConfig) (*any, error) {
 	config.Log.Debugf("[RefundMsgRequestParser] ParseMessage# msg: %++v", sdkMsg)
-	// parsedMsg, ok := sdkMsg.(*rewardTypes.RefundMsgRequest)
-	// if !ok {
-	// 	return nil, errors.New("not a refund message request")
-	// }
-	// parsedMessageValue := RefundMsgRequestValue{
-	// 	Type:   MSG_SCALAR_REWARD_REFUND_MSG_REQUEST,
-	// 	Sender: parsedMsg.Sender,
-	// }
+	parsedMsg, ok := sdkMsg.(*rewardTypes.RefundMsgRequest)
+	if !ok {
+		return nil, errors.New("not a refund message request")
+	}
+	var parsedMessageValue any = &RefundMsg{
+		Type:         MSG_SCALAR_REWARD_REFUND_MSG_REQUEST,
+		Sender:       parsedMsg.Sender,
+		InnerMessage: parsedMsg.InnerMessage,
+	}
 	// innerMsg := parsedMsg.InnerMessage.GetCachedValue()
 	// if innerMsg != nil {
 	// 	voteRequest, ok := (innerMsg).(voterequest.VoteRequestValue)
@@ -57,37 +57,41 @@ func (p *RefundMsgRequestParser) ParseMessage(sdkMsg stdTypes.Msg, messageLog *i
 	// 	}
 	// }
 
-	return nil, nil
+	return &parsedMessageValue, nil
 }
 
 // This method is called during database insertion. It is responsible for storing the parsed data in the database.
 // The gorm db is wrapped in a transaction, so any errors will cause a rollback.
 // Any errors returned will be saved as a parser error in the database as well for later debugging.
 func (p *RefundMsgRequestParser) IndexMessage(dataset *any, db *gorm.DB, message models.Message, messageEvents []parsers.MessageEventWithAttributes, cfg config.IndexConfig) error {
-	parsedMessageEvent, ok := (*dataset).(RefundMsgRequestValue)
+	config.Log.Debugf("RefundMsgRequestParser# IndexMessage# message: %++v, dataset: %T, %++v", message, *dataset, *dataset)
+	_, ok := (*dataset).(*RefundMsg)
 	if !ok {
-		return errors.New("failed to cast dataset to RefundMsgRequestValue")
-	}
-	jsonValue, err := json.Marshal(parsedMessageEvent)
-	if err == nil {
-		txMessage := common.TxMessage{
-			Tx:            message.Tx,
-			MessageID:     message.ID,
-			BlockId:       message.Tx.BlockID,
-			MessageDetail: string(jsonValue),
-		}
-
-		err = db.Clauses(clause.OnConflict{
-			Columns:   []clause.Column{{Name: "tx_id"}, {Name: "message_id"}},
-			DoUpdates: clause.AssignmentColumns([]string{"message_detail"}),
-		}).Create(&txMessage).Error
-		if err != nil {
-			config.Log.Debugf("RefundMsgRequestParser# Failed to save message event %v", err)
-		}
-	} else {
-		config.Log.Debugf("RefundMsgRequestParser# Failed to marshal message event %v", err)
-		return err
+		return errors.New("failed to cast dataset to RefundMsg")
 	}
 
-	return err
+	// jsonValue, err := json.Marshal(parsedMsg)
+	// if err == nil {
+	// 	txMessage := common.TxMessage{
+	// 		Tx:            message.Tx,
+	// 		TxID:          message.TxID,
+	// 		MessageID:     message.ID,
+	// 		MessageType:   parsedMsg.Type,
+	// 		BlockId:       message.Tx.BlockID,
+	// 		MessageDetail: string(jsonValue),
+	// 	}
+
+	// 	err = db.Clauses(clause.OnConflict{
+	// 		Columns:   []clause.Column{{Name: "tx_id"}, {Name: "message_id"}},
+	// 		DoUpdates: clause.AssignmentColumns([]string{"message_detail"}),
+	// 	}).Create(&txMessage).Error
+	// 	if err != nil {
+	// 		config.Log.Debugf("RefundMsgRequestParser# Failed to save message %v", err)
+	// 	}
+	// } else {
+	// 	config.Log.Debugf("RefundMsgRequestParser# Failed to marshal message %v", err)
+	// 	return err
+	// }
+
+	return nil
 }
