@@ -60,17 +60,17 @@ const (
 )
 
 func ExtendEventsIndexer(indexer *indexer.Indexer) error {
-	blockEventParsers := []parsers.BlockEventParser{
-		&MessageEventParser{
-			BaseParser: BaseParser{
-				Id:      EVENT_TYPE_MESSAGE,
-				Indexer: indexer,
-			},
-		},
-	}
-	for _, parser := range blockEventParsers {
-		indexer.RegisterCustomBlockEventParser(parser.Identifier(), parser)
-	}
+	// blockEventParsers := []parsers.BlockEventParser{
+	// 	&MessageEventParser{
+	// 		BaseParser: BaseParser{
+	// 			Id:      EVENT_TYPE_MESSAGE,
+	// 			Indexer: indexer,
+	// 		},
+	// 	},
+	// }
+	// for _, parser := range blockEventParsers {
+	// 	indexer.RegisterCustomBlockEventParser(parser.Identifier(), parser)
+	// }
 	registerBlockEventParsersCosmos(indexer)
 	registerBlockEventParsersNexus(indexer)
 	registerBlockEventParsersCovenant(indexer)

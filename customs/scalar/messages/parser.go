@@ -33,6 +33,7 @@ func ExtendMessagesIndexer(instance *indexer.Indexer) error {
 	}
 	instance.RegisterMessageTypeFilter(scalarFilter)
 
+	// auxiliary.ExtendMessagesIndexerAuxiliary(instance)
 	chains.ExtendMessagesIndexerChains(instance)
 	covenant.ExtendMessagesIndexerCovenant(instance)
 	multisig.ExtendMessagesIndexerMultisig(instance)
@@ -43,6 +44,7 @@ func ExtendMessagesIndexer(instance *indexer.Indexer) error {
 	extendMessagesIndexerTokens(instance)
 
 	instance.PostSetupCustomFunction = func(dataset indexer.PostSetupCustomDataset) error {
+		// auxiliary.PostSetupCustomFunctionAuxiliary(instance, &dataset)
 		chains.PostSetupCustomFunctionChains(instance, &dataset)
 		covenant.PostSetupCustomFunctionCovenant(instance, &dataset)
 		multisig.PostSetupCustomFunctionMultisig(instance, &dataset)

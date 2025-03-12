@@ -141,7 +141,7 @@ func validateResponseID(id interface{}) error {
 }
 
 func (c *URIClient) DoBlockResults(ctx context.Context, height *int64) (*ctypes.ResultBlockResults, error) {
-	result := new(ctypes.ResultBlockResults)
+	result := new(ResultBlockResults)
 	params := make(map[string]interface{})
 	if height != nil {
 		params["height"] = height
@@ -152,7 +152,7 @@ func (c *URIClient) DoBlockResults(ctx context.Context, height *int64) (*ctypes.
 		return nil, err
 	}
 
-	return result, nil
+	return result.ToCometbftBlockResult(), nil
 }
 
 func GetBlockResult(client URIClient, height int64) (*ctypes.ResultBlockResults, error) {

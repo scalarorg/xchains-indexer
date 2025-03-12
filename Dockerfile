@@ -1,4 +1,4 @@
-FROM golang:1.23.3-alpine3.20 AS base
+FROM golang:1.23.7-alpine3.20 AS base
 
 # TARGETPLATFORM should be one of linux/amd64 or linux/arm64
 ARG TARGETPLATFORM
