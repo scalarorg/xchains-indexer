@@ -14,10 +14,6 @@ func (p *MessageEventParser) ParseBlockEvent(block *models.Block, event abci.Eve
 	if _, err := p.BaseParser.ParseBlockEvent(block, event, attributes, conf); err != nil {
 		return nil, err
 	}
-	for _, attribute := range attributes {
-		config.Log.Debugf("[MessageEventParser] ParseBlockEvent# %s => %++v", attribute.BlockEventAttributeKey.Key, attribute.Value)
-	}
-	config.Log.Debugf("[MessageEventParser] ParseBlockEvent# model: %++v", event)
 	return nil, nil
 }
 

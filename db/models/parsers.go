@@ -2,7 +2,7 @@ package models
 
 type BlockEventParser struct {
 	ID         uint
-	Identifier string `gorm:"uniqueIndex:idx_block_event_parser_identifier_lifecycle_position"`
+	Identifier string `gorm:"uniqueIndex:idx_block_event_parser_identifier"`
 }
 
 type BlockEventParserError struct {

@@ -20,7 +20,7 @@ type RefundMsgRequestParser struct {
 }
 
 func (p *RefundMsgRequestParser) ParseMessage(sdkMsg stdTypes.Msg, messageLog *indexerTxTypes.LogMessage, cfg config.IndexConfig) (*any, error) {
-	config.Log.Debugf("[RefundMsgRequestParser] ParseMessage# msg: %++v", sdkMsg)
+	config.Log.Debugf("[RefundMsgRequestParser] ParseMessage# msg: %T", sdkMsg)
 	parsedMsg, ok := sdkMsg.(*rewardTypes.RefundMsgRequest)
 	if !ok {
 		return nil, errors.New("not a refund message request")
@@ -64,7 +64,7 @@ func (p *RefundMsgRequestParser) ParseMessage(sdkMsg stdTypes.Msg, messageLog *i
 // The gorm db is wrapped in a transaction, so any errors will cause a rollback.
 // Any errors returned will be saved as a parser error in the database as well for later debugging.
 func (p *RefundMsgRequestParser) IndexMessage(dataset *any, db *gorm.DB, message models.Message, messageEvents []parsers.MessageEventWithAttributes, cfg config.IndexConfig) error {
-	config.Log.Debugf("RefundMsgRequestParser# IndexMessage# message: %++v, dataset: %T, %++v", message, *dataset, *dataset)
+	config.Log.Debugf("[RefundMsgRequestParser] IndexMessage# dataset: %T, %++v", *dataset, *dataset)
 	_, ok := (*dataset).(*RefundMsg)
 	if !ok {
 		return errors.New("failed to cast dataset to RefundMsg")

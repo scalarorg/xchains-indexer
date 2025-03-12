@@ -204,7 +204,7 @@ func ProcessRPCTXs(cfg *config.IndexConfig, db *gorm.DB, cl *client.ChainClient,
 
 		currTx := txEventResp.Txs[txIdx]
 		currTxResp := txEventResp.TxResponses[txIdx]
-		config.Log.Debug(fmt.Sprintf("[Block: %v] [TX: %v] Indexing msgs '%++v'.", currTxResp.Height, currTxResp.TxHash, currTx.Body.Messages))
+		config.Log.Debug(fmt.Sprintf("[Block: %v] [TX: %v].", currTxResp.Height, currTxResp.TxHash))
 
 		if len(currTxResp.Logs) == 0 && len(currTxResp.Events) != 0 {
 			// We have a version of Cosmos SDK that removed the Logs field from the TxResponse, we need to parse the events into message index logs
@@ -375,7 +375,6 @@ func ProcessTx(cfg *config.IndexConfig, db *gorm.DB, tx txtypes.MergedTx, messag
 	// non-zero code means the Tx was unsuccessful. We will still need to account for fees in both cases though.
 	if code == 0 {
 		for messageIndex, message := range tx.Tx.Body.Messages {
-			config.Log.Debugf("Processing message: %++v", message)
 			if message != nil {
 				messageLog := txtypes.GetMessageLogForIndex(tx.TxResponse.Log, messageIndex)
 				messageType, currMessageDBWrapper := ProcessMessage(messageIndex, message, messageLog, uniqueEventTypes, uniqueEventAttributeKeys)

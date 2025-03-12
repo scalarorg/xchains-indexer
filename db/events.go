@@ -44,51 +44,53 @@ func IndexBlockEvents(db *gorm.DB, dryRun bool, blockDBWrapper *BlockDBWrapper, 
 			uniqueBlockEventTypes = append(uniqueBlockEventTypes, value)
 		}
 
-		// Bulk find or create on unique event types
-		if err := dbTransaction.Clauses(
-			clause.Returning{
-				Columns: []clause.Column{
-					{Name: "id"}, {Name: "type"},
+		if len(uniqueBlockEventTypes) > 0 {
+			// Bulk find or create on unique event types
+			if err := dbTransaction.Clauses(
+				clause.Returning{
+					Columns: []clause.Column{
+						{Name: "id"}, {Name: "type"},
+					},
 				},
-			},
-			clause.OnConflict{
-				Columns:   []clause.Column{{Name: "type"}},
-				DoUpdates: clause.AssignmentColumns([]string{"type"}),
-			},
-		).Create(&uniqueBlockEventTypes).Error; err != nil {
-			config.Log.Error("Error creating begin block event types.", err)
-			return err
-		}
+				clause.OnConflict{
+					Columns:   []clause.Column{{Name: "type"}},
+					DoUpdates: clause.AssignmentColumns([]string{"type"}),
+				},
+			).Create(&uniqueBlockEventTypes).Error; err != nil {
+				config.Log.Error("Error creating block event types", err)
+				return err
+			}
 
-		for _, value := range uniqueBlockEventTypes {
-			blockDBWrapper.UniqueBlockEventTypes[value.Type] = value
-		}
+			for _, value := range uniqueBlockEventTypes {
+				blockDBWrapper.UniqueBlockEventTypes[value.Type] = value
+			}
 
+		}
 		var uniqueBlockEventAttributeKeys []models.BlockEventAttributeKey
 
 		for _, value := range blockDBWrapper.UniqueBlockEventAttributeKeys {
 			uniqueBlockEventAttributeKeys = append(uniqueBlockEventAttributeKeys, value)
 		}
-
-		if err := dbTransaction.Clauses(
-			clause.Returning{
-				Columns: []clause.Column{
-					{Name: "id"}, {Name: "key"},
+		if len(uniqueBlockEventAttributeKeys) > 0 {
+			if err := dbTransaction.Clauses(
+				clause.Returning{
+					Columns: []clause.Column{
+						{Name: "id"}, {Name: "key"},
+					},
 				},
-			},
-			clause.OnConflict{
-				Columns:   []clause.Column{{Name: "key"}},
-				DoUpdates: clause.AssignmentColumns([]string{"key"}),
-			},
-		).Create(&uniqueBlockEventAttributeKeys).Error; err != nil {
-			config.Log.Error("Error creating begin block event attribute keys.", err)
-			return err
-		}
+				clause.OnConflict{
+					Columns:   []clause.Column{{Name: "key"}},
+					DoUpdates: clause.AssignmentColumns([]string{"key"}),
+				},
+			).Create(&uniqueBlockEventAttributeKeys).Error; err != nil {
+				config.Log.Error("Error creating block event attribute keys.", err)
+				return err
+			}
 
-		for _, value := range uniqueBlockEventAttributeKeys {
-			blockDBWrapper.UniqueBlockEventAttributeKeys[value.Key] = value
+			for _, value := range uniqueBlockEventAttributeKeys {
+				blockDBWrapper.UniqueBlockEventAttributeKeys[value.Key] = value
+			}
 		}
-
 		// Loop through begin and end block arrays and apply the block ID and event type ID
 		blockEvents := make([]*models.BlockEvent, len(blockDBWrapper.BlockEvents))
 		for index := range blockDBWrapper.BlockEvents {
@@ -105,12 +107,12 @@ func IndexBlockEvents(db *gorm.DB, dryRun bool, blockDBWrapper *BlockDBWrapper, 
 			// We need this so that we can then create the proper associations with the attributes below
 			if err := dbTransaction.Clauses(
 				clause.OnConflict{
-					Columns: []clause.Column{{Name: "index"}, {Name: "lifecycle_position"}, {Name: "block_id"}},
+					Columns: []clause.Column{{Name: "index"}, {Name: "block_id"}},
 					// Force update of block event type ID
 					DoUpdates: clause.AssignmentColumns([]string{"block_event_type_id"}),
 				},
 			).Create(&blockEvents).Error; err != nil {
-				config.Log.Error("Error creating begin block events.", err)
+				config.Log.Error("Error creating block events.", err)
 				return err
 			}
 
